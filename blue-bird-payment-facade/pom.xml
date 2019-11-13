@@ -8,7 +8,7 @@
     <artifactId>blue-bird-payment-facade</artifactId>
     <version>1.0-SNAPSHOT</version>
 
-    <name>blue-bird-payment-facade</name>
+    <name>blue.bird.payment.facade</name>
 
 
     <properties>
