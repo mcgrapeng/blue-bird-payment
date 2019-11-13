@@ -1,30 +1,28 @@
 package com.zhangpeng.payment.core;
 
 import com.zhangpeng.payment.center.PaymentProcessor;
-import com.zhangpeng.payment.center.PaymentProcessorFactory;
 import com.zhangpeng.payment.center.enums.PayWayEnum;
-import com.zhangpeng.payment.core.utils.SpringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component("paymentProcessorFactory")
-public final class AbstarctPaymentProcessorFactory  implements PaymentProcessorFactory {
+public  class AbstarctPaymentProcessorFactory  implements PaymentProcessorFactory  {
 
-    private PaymentProcessor paymentProcessor;
+    @Autowired
+    private MDPaymentProcessor mdPaymentProcessor;
+
+    @Autowired
+    private WXPaymentProcessor wxPaymentProcessor;
 
 
     public PaymentProcessor findPaymentProcessor(String payWayCode){
         if(PayWayEnum.MIAODAO.name().equals(payWayCode)){
-            MDPaymentProcessor mdPaymentProcessor = SpringUtils.<MDPaymentProcessor>getBean("MDPaymentProcessor");
-            paymentProcessor = mdPaymentProcessor;
+           return mdPaymentProcessor;
         }else if(PayWayEnum.WEIXIN.name().equals(payWayCode)){
-            WXPaymentProcessor wxPaymentProcessor = SpringUtils.<WXPaymentProcessor>getBean("WXPaymentProcessor");
-            paymentProcessor = wxPaymentProcessor;
+           return wxPaymentProcessor;
         }else if(PayWayEnum.ALIPAY.name().equals(payWayCode)){
             //
         }
-        return paymentProcessor;
+        return null;
     }
-
-
-
 }

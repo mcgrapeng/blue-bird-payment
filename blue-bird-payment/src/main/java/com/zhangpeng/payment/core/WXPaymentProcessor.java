@@ -2,7 +2,6 @@ package com.zhangpeng.payment.core;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.zhangpeng.payment.center.PaymentProcessor;
 import com.zhangpeng.payment.center.PaymentREQ;
 import com.zhangpeng.payment.center.PaymentRES;
 import com.zhangpeng.payment.center.domain.PaymentWay;
@@ -13,9 +12,11 @@ import com.zhangpeng.payment.core.utils.MDPaymentUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.io.Serializable;
+
 @Slf4j
 @Service("WXPaymentProcessor")
-public class WXPaymentProcessor extends  PaymentProcessorTemplate implements PaymentProcessor {
+public class WXPaymentProcessor extends  PaymentProcessorTemplate  {
     @Override
     public PaymentRES process(PaymentWay paymentWay, PaymentREQ paymentREQ) {
         if (PayWayEnum.WEIXIN.name().equals(paymentWay.getPayWayCode())) {

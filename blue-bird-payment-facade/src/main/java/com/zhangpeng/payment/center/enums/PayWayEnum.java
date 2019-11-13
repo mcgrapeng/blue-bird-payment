@@ -9,7 +9,7 @@ import java.util.Map;
  * 支付方式枚举
  * 张朋
  */
-public enum PayWayEnum {
+public enum PayWayEnum  {
 
     MIAODAO("秒到"),
 

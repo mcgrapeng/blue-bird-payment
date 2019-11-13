@@ -3,7 +3,6 @@ package com.zhangpeng.payment.core;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Maps;
-import com.zhangpeng.payment.center.PaymentProcessor;
 import com.zhangpeng.payment.center.PaymentREQ;
 import com.zhangpeng.payment.center.PaymentRES;
 import com.zhangpeng.payment.center.domain.PaymentWay;
@@ -15,11 +14,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
+import java.io.Serializable;
 import java.util.Map;
 
 @Slf4j
 @Service("MDPaymentProcessor")
-public class MDPaymentProcessor extends PaymentProcessorTemplate implements PaymentProcessor {
+public class MDPaymentProcessor extends PaymentProcessorTemplate  {
     @Override
     public PaymentRES process(PaymentWay paymentWay, PaymentREQ paymentREQ) {
         if (PayWayEnum.MIAODAO.name().equals(paymentWay.getPayWayCode())) {
