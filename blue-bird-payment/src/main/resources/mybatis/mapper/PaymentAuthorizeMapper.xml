@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.zhangpeng.payment.core.mapper.PaymentAuthorizeMapper">
+
+    <resultMap id="BaseResultMap" type="PaymentAuthorize" >
+        <id column="ID" property="id" jdbcType="INTEGER" />
+        <result column="open_id" property="openId" jdbcType="VARCHAR" />
+        <result column="user_no" property="userNo" jdbcType="VARCHAR" />
+    </resultMap>
+
+    <sql id="condition_sql">
+        <if test="userNo != null and userNo != ''"> and user_no = #{userNo,jdbcType=VARCHAR}</if>
+    </sql>
+
+    <sql id="table_name"> blue_bird_pay_authorize</sql>
+
+    <insert id="insert" useGeneratedKeys="true"  parameterType="PaymentAuthorize" >
+        insert into blue_bird_pay_authorize (open_id,
+          user_no)
+        values (#{openId,jdbcType=VARCHAR}, #{userNo,jdbcType=VARCHAR} )
+    </insert>
+
+
+    <select id="selectBy" parameterType="java.util.Map" resultMap="BaseResultMap">
+        select * from
+        <include refid="table_name" />
+        <where>
+            <include refid="condition_sql" />
+        </where>
+    </select>
+
+
+    <delete id="deleteByUserNo" parameterType="String" >
+            delete from blue_bird_pay_authorize where user_no = #{userNo,jdbcType=VARCHAR}
+    </delete>
+</mapper>
