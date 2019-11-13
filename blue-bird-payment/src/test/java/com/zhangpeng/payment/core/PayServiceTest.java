@@ -14,7 +14,7 @@ import java.math.BigDecimal;
 import java.util.Date;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = {"classpath*:spring/spring-*.xml"})
+@ContextConfiguration(locations = {"classpath:spring/spring-context.xml"})
 public class PayServiceTest {
 
     @Autowired

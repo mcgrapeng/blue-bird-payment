@@ -43,11 +43,11 @@ public class PaymentRES<T> implements Serializable {
     }
 
     public static <T> PaymentRES<T> of(String code, T data, String message){
-        return new PaymentRES<>(code,data,message);
+        return new PaymentRES<T>(code,data,message);
     }
 
     public static <T> PaymentRES<T> of(String code, String message){
-        return new PaymentRES<>(code,message);
+        return new PaymentRES<T>(code,message);
     }
 
 }

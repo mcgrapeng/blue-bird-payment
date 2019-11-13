@@ -34,7 +34,7 @@ public final class HttpUtils {
             // s.setContentType("application/x-www-form-urlencoded;charset=UTF-8");//发送表单数据需要设置contentType
             // post.setEntity(s);
 
-            List<BasicNameValuePair> pairList = new ArrayList<>();
+            List<BasicNameValuePair> pairList = new ArrayList<BasicNameValuePair>();
             String totalAmount = json.get("totalAmount");
             if(StringUtils.isNotBlank(totalAmount)){
                 pairList.add(new BasicNameValuePair("totalAmount", totalAmount));
@@ -118,7 +118,7 @@ public final class HttpUtils {
             // s.setContentType("application/x-www-form-urlencoded;charset=UTF-8");//发送表单数据需要设置contentType
             // post.setEntity(s);
 
-            List<BasicNameValuePair> pairList = new ArrayList<>();
+            List<BasicNameValuePair> pairList = new ArrayList<BasicNameValuePair>();
             post.setEntity(new UrlEncodedFormEntity(pairList, "utf-8"));
             HttpResponse res = httpclient.execute(post);
             if (res.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {

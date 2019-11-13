@@ -14,7 +14,7 @@ import java.math.BigDecimal;
 import java.util.Date;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = {"classpath*:spring/spring-*.xml"})
+@ContextConfiguration(locations = {"classpath:spring/spring-context.xml"})
 public class OrderServiceTest {
 
     @Autowired
@@ -42,7 +42,7 @@ public class OrderServiceTest {
                 .setExpireTime(new Date())
                 .setMerchantName("卡卡得")
                 .setMerchantNo("35")
-                .setMerchantOrderNo("10010001000")
+                .setMerchantOrderNo("10010001000333")
                 .setNotifyUrl("www.baidu.com")
                 .setOrderDate("2019-10-28")
                 .setOrderIp("127.0.0.1")

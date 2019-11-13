@@ -13,7 +13,9 @@ import java.util.Map;
  */
 public enum MerchantEnum {
 
-    KKD(PayMDConfiguration.MERCHANT_NO,"卡卡得");
+    KKD(PayMDConfiguration.MERCHANT_NO,"卡卡得"),
+
+    KKD_TEST("13235880088","卡卡得测试");
 
     private String code;
     /** 描述 */

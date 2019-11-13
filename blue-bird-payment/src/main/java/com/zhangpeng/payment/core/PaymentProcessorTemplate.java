@@ -41,7 +41,7 @@ public abstract class PaymentProcessorTemplate implements PaymentProcessor {
     @Autowired
     protected PaymentAuthorizeService paymentAuthorizeService;
 
-    @Autowired
+    //@Autowired
     private RedisTemplate redisTemplate;
 
     /**
@@ -170,6 +170,11 @@ public abstract class PaymentProcessorTemplate implements PaymentProcessor {
         if (payWay == null) {
             return PaymentRES.of(String.valueOf(PaymentBizException.TRADE_PAY_WAY_ERROR)
                     , "用户支付方式配置有误");
+        }
+
+        if(payWay.getStatus().equals(PublicStatusEnum.UNACTIVE.name())){
+            return PaymentRES.of(String.valueOf(PaymentBizException.TRADE_PAY_WAY_ERROR)
+                    , "该支付通道未激活");
         }
 
         //生产订单记录
