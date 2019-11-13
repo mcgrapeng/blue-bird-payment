@@ -11,6 +11,7 @@
 	<!--项目模块-->
 	<modules>
 		<module>blue-bird-payment</module>
+		<module>blue-bird-payment-facade</module>
 	</modules>
 
 </project>
