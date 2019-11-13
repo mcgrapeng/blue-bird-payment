@@ -139,7 +139,6 @@ public abstract class PaymentProcessorTemplate implements PaymentProcessor {
 
     public abstract PaymentRES process( PaymentWay payWay, PaymentREQ paymentREQ);
 
-    public abstract PaymentRES openid(PaymentREQ paymentREQ);
 
     /**
      * 小程序支付

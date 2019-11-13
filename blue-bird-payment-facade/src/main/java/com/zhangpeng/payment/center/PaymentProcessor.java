@@ -40,4 +40,9 @@ public interface PaymentProcessor {
      * @return
      */
     PaymentRES completePayResult(String payProductNo, String payTypeCode, String merchantNo, String merchantOrderNo);
+
+
+
+    PaymentRES openid(PaymentREQ paymentREQ);
+
 }
