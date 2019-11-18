@@ -16,7 +16,7 @@ import java.util.Map;
  * 张三丰
  */
 @Slf4j
-public final class PaymentSign {
+public final class MDPaymentSign {
 
     /**
      * 获取签名
@@ -87,7 +87,7 @@ public final class PaymentSign {
      */
     public static boolean verifySign(Map<String,String>  param , String sign){
         try {
-            String compareSign = PaymentSign.signRequest(param, PayMDConfiguration.KEY);
+            String compareSign = MDPaymentSign.signRequest(param, PayMDConfiguration.KEY);
             if(!compareSign.equals(sign)){
                 throw new PaymentBizException(PaymentBizException.TRADE_PAY_SIGN_ERROR,"签名非法");
             }

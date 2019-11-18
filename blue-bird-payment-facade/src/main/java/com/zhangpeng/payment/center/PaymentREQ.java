@@ -7,7 +7,7 @@ import java.math.BigDecimal;
 import java.util.Date;
 
 @Data
-public class PaymentREQ implements Serializable {
+public class PaymentREQ<T> implements Serializable {
 
     /*********扫码支付参数清单***********/
 
@@ -109,4 +109,7 @@ public class PaymentREQ implements Serializable {
     private String paySuccessUrl;
 
     private String openidUrl;
+
+    //第三方参数实体
+    private T param;
 }

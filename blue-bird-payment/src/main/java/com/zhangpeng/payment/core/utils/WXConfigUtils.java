@@ -1,5 +1,6 @@
 package com.zhangpeng.payment.core.utils;
 
+import com.zhangpeng.payment.center.PayMDConfiguration;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
@@ -15,6 +16,12 @@ public class WXConfigUtils {
      * 通过静态代码块读取上传文件的验证格式配置文件,静态代码块只执行一次(单例)
      */
     private static Properties properties = new Properties();
+
+    public static final String UNIFIED_ORDER_URL = "https://api.mch.weixin.qq.com/pay/unifiedorder";
+
+    public static final String QUERY_ORDER_URL = "https://api.mch.weixin.qq.com/pay/orderquery";
+
+    public static final String PAY_KEY = PayMDConfiguration.KEY;
 
     private WXConfigUtils() {
 

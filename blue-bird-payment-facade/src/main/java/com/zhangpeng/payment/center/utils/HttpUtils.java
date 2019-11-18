@@ -82,6 +82,11 @@ public final class HttpUtils {
                 pairList.add(new BasicNameValuePair("successPageUrl", successPageUrl));
             }
 
+            String returnParams = json.get("returnParams");
+            if(StringUtils.isNotBlank(returnParams)){
+                pairList.add(new BasicNameValuePair("returnParams", returnParams));
+            }
+
             String sign = json.get("sign");
             pairList.add(new BasicNameValuePair("sign", sign));
             post.setEntity(new UrlEncodedFormEntity(pairList, "utf-8"));

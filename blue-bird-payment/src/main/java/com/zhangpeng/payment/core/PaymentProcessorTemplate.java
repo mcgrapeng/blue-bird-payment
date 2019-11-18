@@ -10,8 +10,8 @@ import com.zhangpeng.payment.center.domain.PaymentWay;
 import com.zhangpeng.payment.center.enums.*;
 import com.zhangpeng.payment.center.ex.PaymentBizException;
 import com.zhangpeng.payment.center.utils.DateUtils;
+import com.zhangpeng.payment.core.utils.MDPaymentSign;
 import com.zhangpeng.payment.core.utils.MDPaymentUtils;
-import com.zhangpeng.payment.core.utils.PaymentSign;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,8 +44,6 @@ public abstract class PaymentProcessorTemplate implements PaymentProcessor {
     //@Autowired
     private RedisTemplate redisTemplate;
 
-    @Autowired
-    private PaymentProcessorFactory paymentProcessorFactory;
 
     /**
      * 封装支付流水记录实体
@@ -366,7 +364,7 @@ public abstract class PaymentProcessorTemplate implements PaymentProcessor {
         param.put("payStatus", payStatus);
         param.put("amount", orderAmount);
 
-        if (PaymentSign.verifySign(param, sign)) {
+        if (MDPaymentSign.verifySign(param, sign)) {
             if (TradeStatusEnum.SUCCESS.name().equalsIgnoreCase(resultCode)) {// 业务结果
                 // 成功
                 Date timeEnd = null;
@@ -477,18 +475,21 @@ public abstract class PaymentProcessorTemplate implements PaymentProcessor {
     }
 
 
-    /**
-     * 先这么搞
-     * @return
-     */
-//    private  String getTrxNoByTime() {
-//        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
-//        String newDate = sdf.format(new Date());
-//        String result = "";
-//        Random random = new Random();
-//        for (int i = 0; i < 3; i++) {
-//            result += random.nextInt(10);
-//        }
-//        return newDate + result;
-//    }
+    @Override
+    public PaymentRES payPostProcess(PaymentREQ req) {
+        PaymentWay payWay = queryPaymentWay(req.getProductNo(), req.getPayType());//支付产品下的支付通道，支付通道下的支付类型
+        if (payWay == null) {
+            return PaymentRES.of(String.valueOf(PaymentBizException.TRADE_PAY_WAY_ERROR)
+                    , "用户支付方式配置有误");
+        }
+        if (payWay.getPayWayCode().equals(PayWayEnum.MIAODAO.name())) {
+            JSONObject jsonObject = MDPaymentUtils.closeOrder(req.getOutTradeNo());
+            if (null != jsonObject
+                    && jsonObject.getBoolean("result") && jsonObject.getString("resultCode").equalsIgnoreCase(TradeStatusEnum.SUCCESS.name())) {
+                return PaymentRES.of(String.valueOf(PaymentBizException.SUCCESS), jsonObject, "关单成功!");
+            }
+        }
+        return PaymentRES.of(String.valueOf(PaymentBizException.FAILED)
+                , "关单失败！");
+    }
 }

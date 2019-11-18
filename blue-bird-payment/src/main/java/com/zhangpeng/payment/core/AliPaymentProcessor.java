@@ -13,8 +13,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 @Slf4j
-@Service("WXPaymentProcessor")
-public class WXPaymentProcessor extends  PaymentProcessorTemplate  {
+@Service("AliPaymentProcessor")
+public class AliPaymentProcessor extends  PaymentProcessorTemplate  {
     @Override
     public PaymentRES process(PaymentWay paymentWay, PaymentREQ paymentREQ) {
         if (PayWayEnum.WEIXIN.name().equals(paymentWay.getPayWayCode())) {

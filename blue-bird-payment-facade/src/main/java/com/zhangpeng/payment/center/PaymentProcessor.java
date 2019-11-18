@@ -12,6 +12,14 @@ public interface PaymentProcessor {
 
 
     /**
+     * 支付后置处理
+     * @param req
+     * @return
+     */
+    PaymentRES payPostProcess(PaymentREQ req);
+
+
+    /**
      * 支付回调
      *
      * @param tradeNo         第三方支付机构流水号
@@ -40,9 +48,5 @@ public interface PaymentProcessor {
      * @return
      */
     PaymentRES completePayResult(String payProductNo, String payTypeCode, String merchantNo, String merchantOrderNo);
-
-
-
-    PaymentRES openid(PaymentREQ paymentREQ);
 
 }

@@ -3,23 +3,28 @@ package com.zhangpeng.payment.core;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Maps;
+import com.zhangpeng.payment.center.PayMDConfiguration;
+import com.zhangpeng.payment.center.PaymentAuthorizeProcessor;
 import com.zhangpeng.payment.center.PaymentREQ;
 import com.zhangpeng.payment.center.PaymentRES;
 import com.zhangpeng.payment.center.domain.PaymentWay;
 import com.zhangpeng.payment.center.enums.PayTypeEnum;
 import com.zhangpeng.payment.center.enums.PayWayEnum;
 import com.zhangpeng.payment.center.ex.PaymentBizException;
+import com.zhangpeng.payment.center.utils.DateUtils;
+import com.zhangpeng.payment.core.enums.SecurityEnum;
 import com.zhangpeng.payment.core.utils.MDPaymentUtils;
+import com.zhangpeng.payment.core.utils.WXCommonUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
-import java.io.Serializable;
+import java.util.Date;
 import java.util.Map;
 
 @Slf4j
 @Service("MDPaymentProcessor")
-public class MDPaymentProcessor extends PaymentProcessorTemplate  {
+public class MDPaymentProcessor extends PaymentProcessorTemplate implements PaymentAuthorizeProcessor {
     @Override
     public PaymentRES process(PaymentWay paymentWay, PaymentREQ paymentREQ) {
         if (PayWayEnum.MIAODAO.name().equals(paymentWay.getPayWayCode())) {
@@ -46,7 +51,7 @@ public class MDPaymentProcessor extends PaymentProcessorTemplate  {
     }
 
     @Override
-    public PaymentRES openid(PaymentREQ paymentREQ) {
+    public PaymentRES payOpenId(PaymentREQ paymentREQ) {
         Map<String,String> data = Maps.newHashMap();
         JSONObject jsonObject;
         try {
@@ -58,7 +63,7 @@ public class MDPaymentProcessor extends PaymentProcessorTemplate  {
             jsonObject = MDPaymentUtils.openId(paymentREQ.getOpenidUrl());
             if(null != jsonObject
                     &&  jsonObject.getBoolean("result")  && jsonObject.getInteger("code") == 200){
-                String redirectUrl = jsonObject.getString("redirectUrl");
+                String redirectUrl = jsonObject.getJSONObject("data").getString("redirectUrl");
                 data.put("redirectUrl",redirectUrl);
                 return PaymentRES.of(String.valueOf(PaymentBizException.SUCCESS), data, "重定向请求发起");
             }
@@ -66,5 +71,18 @@ public class MDPaymentProcessor extends PaymentProcessorTemplate  {
             log.error(e.getMessage(), e);
         }
         return PaymentRES.of(String.valueOf(PaymentBizException.FAILED), "获取openid失败!");
+    }
+
+    @Override
+    public PaymentRES paySign(PaymentREQ paymentREQ) {
+        String param = (String)paymentREQ.getParam();
+        Map<String,Object> paramMap = Maps.newHashMap();
+        paramMap.put("appId",PayMDConfiguration.APP_ID);
+        paramMap.put("timeStamp",String.valueOf(DateUtils.getSecondTimestamp(new Date())));
+        paramMap.put("nonceStr",WXCommonUtils.createNonceStr());
+        paramMap.put("signType", SecurityEnum.MD5.getDesc());
+        paramMap.put("package",param);
+        paramMap.put("paySign",WXCommonUtils.md5Sign(paramMap, PayMDConfiguration.KEY));
+        return PaymentRES.of(String.valueOf(PaymentBizException.SUCCESS), paramMap, "获取签名成功!");
     }
 }

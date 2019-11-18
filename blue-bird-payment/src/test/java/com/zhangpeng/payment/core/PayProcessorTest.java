@@ -5,7 +5,7 @@ import com.google.common.collect.Maps;
 import com.zhangpeng.payment.center.*;
 import com.zhangpeng.payment.center.enums.PayWayEnum;
 import com.zhangpeng.payment.center.enums.TradeStatusEnum;
-import com.zhangpeng.payment.core.utils.PaymentSign;
+import com.zhangpeng.payment.core.utils.MDPaymentSign;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,7 +59,7 @@ public class PayProcessorTest {
         param.put("payStatus", TradeStatusEnum.WAITING_PAYMENT.name());
         param.put("amount","0.01");
         try {
-            String sign = PaymentSign.signRequest(param, PayMDConfiguration.KEY);
+            String sign = MDPaymentSign.signRequest(param, PayMDConfiguration.KEY);
             paymentProcessor.findPaymentProcessor(PayWayEnum.MIAODAO.name()).completePay("","","","1231231","100000000000000","10010001000",PayMDConfiguration.MERCHANT_NO
                     ,"0.01", TradeStatusEnum.WAITING_PAYMENT.name(),"2019-09-28 10:00:00"
                     ,sign,"fail");

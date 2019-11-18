@@ -17,7 +17,7 @@ public final class MDPaymentUtils {
 
 
     /**
-     * 秒到小程序支付
+     * 秒到统一下单
      * @param totalAmount
      * @param outTradeNo
      * @param notifyUrl
@@ -29,7 +29,7 @@ public final class MDPaymentUtils {
         param.put("productName","腾讯大王卡");
         param.put("merchantNo", PayMDConfiguration.MERCHANT_NO);
         param.put("outTradeNo",outTradeNo);
-        param.put("appId", PayMDConfiguration.APP_ID);
+      //  param.put("appId", PayMDConfiguration.APP_ID);
         param.put("openId",openId);
         param.put("piType", PayMDConfiguration.PAY_WAY);
         param.put("gatewayPayMethod", PayMDConfiguration.ACCESS_MODE);
@@ -38,7 +38,7 @@ public final class MDPaymentUtils {
         param.put("returnParams",payNo);
         String sign = null;
         try {
-            sign = PaymentSign.signRequest(param, PayMDConfiguration.KEY);
+            sign = MDPaymentSign.signRequest(param, PayMDConfiguration.KEY);
         } catch (IOException e) {
             log.error("生成签名发生错误",e);
         }
@@ -60,7 +60,11 @@ public final class MDPaymentUtils {
     }
 
 
-
+    /**
+     * 秒到获取openid
+     * @param successPageUrl
+     * @return
+     */
     public  static  JSONObject openId(String successPageUrl){
 
         Map<String,String> param = new HashMap<>();
@@ -69,7 +73,7 @@ public final class MDPaymentUtils {
         param.put("successPageUrl",successPageUrl);
         String sign = null;
         try {
-            sign = PaymentSign.signRequest(param, PayMDConfiguration.KEY);
+            sign = MDPaymentSign.signRequest(param, PayMDConfiguration.KEY);
         } catch (IOException e) {
             log.error("生成签名发生错误",e);
         }
@@ -92,6 +96,11 @@ public final class MDPaymentUtils {
     }
 
 
+    /**
+     * 秒到订单查询
+     * @param outTradeNo
+     * @return
+     */
     public  static  JSONObject queryOrder(String outTradeNo){
         Map<String,String> param = new HashMap<>();
         param.put("merchantNo", PayMDConfiguration.MERCHANT_NO);
@@ -99,7 +108,7 @@ public final class MDPaymentUtils {
 
         String sign = null;
         try {
-            sign = PaymentSign.signRequest(param, PayMDConfiguration.KEY);
+            sign = MDPaymentSign.signRequest(param, PayMDConfiguration.KEY);
         } catch (IOException e) {
             log.error("生成签名发生错误",e);
         }
@@ -118,12 +127,42 @@ public final class MDPaymentUtils {
     }
 
 
+    /**
+     * 关闭订单
+     * @param outTradeNo
+     * @return
+     */
+    public static JSONObject closeOrder(String outTradeNo){
+        Map<String,String> param = new HashMap<>();
+        param.put("merchantNo", PayMDConfiguration.MERCHANT_NO);
+        param.put("outTradeNo", outTradeNo);
+        param.put("agencyCode", PayMDConfiguration.ORGAN_NO);
+        String sign = null;
+        try {
+            sign = MDPaymentSign.signRequest(param, PayMDConfiguration.KEY);
+        } catch (IOException e) {
+            log.error("生成签名发生错误",e);
+        }
+        param.put("sign",sign);
+        log.info("秒到关闭订单，请求报文:{}", JSON.toJSONString(param));
+        JSONObject jsonObject = null;
+        try {
+            jsonObject = HttpUtils.doPost(PayMDConfiguration.CLOSE_ORDER_URL, param);
+        } catch (Exception e) {
+            log.error("秒到关闭订单接口异常 ",e);
+        }
+        log.info("秒到关闭订单，返回报文:{}", jsonObject.toJSONString());
+        return jsonObject;
+    }
+
 
     public static void main(String[] args) {
         try {
-            //JSONObject jsonObject = appletPay("","0.01", "1000100001001", "www.baidu.com");
+            //JSONObject jsonObject = appletPay("ogbn-1dwuwAdD8Bqh0pLo2abiO2g","6798765111111","0.01", "1573784350393", "www.baidu.com");
             JSONObject jsonObject = openId("www.baidu.com");
-            System.out.println(jsonObject.toJSONString());
+
+            System.out.println(jsonObject);
+            System.out.println("=====================");
         } catch (Exception e) {
             e.printStackTrace();
         }
