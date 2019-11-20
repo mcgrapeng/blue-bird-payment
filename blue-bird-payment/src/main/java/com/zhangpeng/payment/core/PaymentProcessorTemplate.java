@@ -10,6 +10,7 @@ import com.zhangpeng.payment.center.domain.PaymentWay;
 import com.zhangpeng.payment.center.enums.*;
 import com.zhangpeng.payment.center.ex.PaymentBizException;
 import com.zhangpeng.payment.center.utils.DateUtils;
+import com.zhangpeng.payment.core.enums.MDPayConfigEnum;
 import com.zhangpeng.payment.core.utils.MDPaymentSign;
 import com.zhangpeng.payment.core.utils.MDPaymentUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -330,8 +331,14 @@ public abstract class PaymentProcessorTemplate implements PaymentProcessor {
                         , "用户支付方式配置有误");
             }
             if (payWay.getPayWayCode().equals(PayWayEnum.MIAODAO.name())) {
+                JSONObject jsonObject = null;
                 //查询秒到支付订单
-                JSONObject jsonObject = MDPaymentUtils.queryOrder(merchantOrderNo);
+                if(payWay.getPayTypeCode().equalsIgnoreCase(PayTypeEnum.WX_PROGRAM_PAY.name())){
+                    jsonObject = MDPaymentUtils.queryOrder(MDPayConfigEnum.MD_WX_PROGRAM_PAY.getMerchantNo(),merchantOrderNo,MDPayConfigEnum.MD_WX_PROGRAM_PAY.getKey());
+                }else if(payWay.getPayTypeCode().equalsIgnoreCase(PayTypeEnum.WX_ACCOUNT_PAY.name())){
+                    jsonObject = MDPaymentUtils.queryOrder(MDPayConfigEnum.MD_WX_ACCOUNT_PAY.getMerchantNo(),merchantOrderNo,MDPayConfigEnum.MD_WX_ACCOUNT_PAY.getKey());
+                }
+
                 if (null != jsonObject
                         && jsonObject.getBoolean("result") && jsonObject.getInteger("code") == 200) {
                     Object data = jsonObject.get("data");
@@ -422,7 +429,12 @@ public abstract class PaymentProcessorTemplate implements PaymentProcessor {
             }
             if (payWay.getPayWayCode().equals(PayWayEnum.MIAODAO.name())) {
                 //查询秒到支付订单
-                JSONObject jsonObject = MDPaymentUtils.queryOrder(merchantOrderNo);
+                JSONObject jsonObject = null;
+                if(payWay.getPayTypeCode().equalsIgnoreCase(PayTypeEnum.WX_PROGRAM_PAY.name())){
+                    jsonObject = MDPaymentUtils.queryOrder(MDPayConfigEnum.MD_WX_PROGRAM_PAY.getMerchantNo(),merchantOrderNo,MDPayConfigEnum.MD_WX_PROGRAM_PAY.getKey());
+                }else if(payWay.getPayTypeCode().equalsIgnoreCase(PayTypeEnum.WX_ACCOUNT_PAY.name())){
+                    jsonObject = MDPaymentUtils.queryOrder(MDPayConfigEnum.MD_WX_ACCOUNT_PAY.getMerchantNo(),merchantOrderNo,MDPayConfigEnum.MD_WX_ACCOUNT_PAY.getKey());
+                }
                 if (null != jsonObject
                         && jsonObject.getBoolean("result") && jsonObject.getInteger("code") == 200) {
                     Object ret = jsonObject.get("data");
@@ -457,7 +469,12 @@ public abstract class PaymentProcessorTemplate implements PaymentProcessor {
             }
             if (payWay.getPayWayCode().equals(PayWayEnum.MIAODAO.name())) {
                 //查询秒到支付订单
-                JSONObject jsonObject = MDPaymentUtils.queryOrder(merchantOrderNo);
+                JSONObject jsonObject = null;
+                if(payWay.getPayTypeCode().equalsIgnoreCase(PayTypeEnum.WX_PROGRAM_PAY.name())){
+                    jsonObject = MDPaymentUtils.queryOrder(MDPayConfigEnum.MD_WX_PROGRAM_PAY.getMerchantNo(),merchantOrderNo,MDPayConfigEnum.MD_WX_PROGRAM_PAY.getKey());
+                }else if(payWay.getPayTypeCode().equalsIgnoreCase(PayTypeEnum.WX_ACCOUNT_PAY.name())){
+                    jsonObject = MDPaymentUtils.queryOrder(MDPayConfigEnum.MD_WX_ACCOUNT_PAY.getMerchantNo(),merchantOrderNo,MDPayConfigEnum.MD_WX_ACCOUNT_PAY.getKey());
+                }
                 if (null != jsonObject
                         && jsonObject.getBoolean("result") && jsonObject.getInteger("code") == 200) {
                     Object ret = jsonObject.get("data");
@@ -483,7 +500,13 @@ public abstract class PaymentProcessorTemplate implements PaymentProcessor {
                     , "用户支付方式配置有误");
         }
         if (payWay.getPayWayCode().equals(PayWayEnum.MIAODAO.name())) {
-            JSONObject jsonObject = MDPaymentUtils.closeOrder(req.getOutTradeNo());
+            JSONObject jsonObject = null;
+            if(payWay.getPayTypeCode().equalsIgnoreCase(PayTypeEnum.WX_PROGRAM_PAY.name())){
+                jsonObject = MDPaymentUtils.closeOrder(MDPayConfigEnum.MD_WX_PROGRAM_PAY.getMerchantNo(),req.getOutTradeNo(),MDPayConfigEnum.MD_WX_PROGRAM_PAY.getKey());
+            }else if(payWay.getPayTypeCode().equalsIgnoreCase(PayTypeEnum.WX_ACCOUNT_PAY.name())){
+                jsonObject = MDPaymentUtils.closeOrder(MDPayConfigEnum.MD_WX_ACCOUNT_PAY.getMerchantNo(),req.getOutTradeNo(),MDPayConfigEnum.MD_WX_ACCOUNT_PAY.getKey());
+            }
+
             if (null != jsonObject
                     && jsonObject.getBoolean("result") && jsonObject.getString("resultCode").equalsIgnoreCase(TradeStatusEnum.SUCCESS.name())) {
                 return PaymentRES.of(String.valueOf(PaymentBizException.SUCCESS), jsonObject, "关单成功!");

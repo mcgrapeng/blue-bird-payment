@@ -3,7 +3,6 @@ package com.zhangpeng.payment.core;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Maps;
-import com.zhangpeng.payment.center.PayMDConfiguration;
 import com.zhangpeng.payment.center.PaymentAuthorizeProcessor;
 import com.zhangpeng.payment.center.PaymentREQ;
 import com.zhangpeng.payment.center.PaymentRES;
@@ -11,15 +10,12 @@ import com.zhangpeng.payment.center.domain.PaymentWay;
 import com.zhangpeng.payment.center.enums.PayTypeEnum;
 import com.zhangpeng.payment.center.enums.PayWayEnum;
 import com.zhangpeng.payment.center.ex.PaymentBizException;
-import com.zhangpeng.payment.center.utils.DateUtils;
-import com.zhangpeng.payment.core.enums.SecurityEnum;
+import com.zhangpeng.payment.core.enums.MDPayConfigEnum;
 import com.zhangpeng.payment.core.utils.MDPaymentUtils;
-import com.zhangpeng.payment.core.utils.WXCommonUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
 import java.util.Map;
 
 @Slf4j
@@ -30,12 +26,17 @@ public class MDPaymentProcessor extends PaymentProcessorTemplate implements Paym
         if (PayWayEnum.MIAODAO.name().equals(paymentWay.getPayWayCode())) {
             JSONObject jsonObject = null;
             try {
-                if (paymentWay.getPayTypeCode().equals(PayTypeEnum.WX_PROGRAM_PAY.name())
-                        || paymentWay.getPayTypeCode().equals(PayTypeEnum.WX_ACCOUNT_PAY.name())) {
+                if (paymentWay.getPayTypeCode().equals(PayTypeEnum.WX_PROGRAM_PAY.name())) {
                     //生成预付单，向秒到发起
-                    jsonObject = MDPaymentUtils.appletPay(paymentREQ.getOpenId(), paymentREQ.getTrxNo(), paymentREQ.getOrderAmount().toPlainString()
+                    jsonObject = MDPaymentUtils.pay(MDPayConfigEnum.MD_WX_PROGRAM_PAY.getMerchantNo()
+                            , MDPayConfigEnum.MD_WX_PROGRAM_PAY.getAppId(), MDPayConfigEnum.MD_WX_PROGRAM_PAY.getAccessMode(), MDPayConfigEnum.MD_WX_PROGRAM_PAY.getKey()
+                            , MDPayConfigEnum.MD_WX_PROGRAM_PAY.getPayType(),  paymentREQ.getOpenId(),paymentREQ.getTrxNo(), paymentREQ.getOrderAmount().toPlainString()
                             , paymentREQ.getMerchantOrderNo(), paymentREQ.getNotifyUrl());
-                    //验签
+                }else if(paymentWay.getPayTypeCode().equals(PayTypeEnum.WX_ACCOUNT_PAY.name())){
+                    jsonObject = MDPaymentUtils.pay(MDPayConfigEnum.MD_WX_ACCOUNT_PAY.getMerchantNo()
+                            , MDPayConfigEnum.MD_WX_ACCOUNT_PAY.getAppId(), MDPayConfigEnum.MD_WX_ACCOUNT_PAY.getAccessMode(), MDPayConfigEnum.MD_WX_ACCOUNT_PAY.getKey()
+                            , MDPayConfigEnum.MD_WX_ACCOUNT_PAY.getPayType(),  paymentREQ.getOpenId(),paymentREQ.getTrxNo(), paymentREQ.getOrderAmount().toPlainString()
+                            , paymentREQ.getMerchantOrderNo(), paymentREQ.getNotifyUrl());
                 }
             } catch (Exception e) {
                 log.error("秒到统一下单发生异常，paymentREQ = {} ", JSON.toJSONString(paymentREQ), e);
@@ -53,14 +54,20 @@ public class MDPaymentProcessor extends PaymentProcessorTemplate implements Paym
     @Override
     public PaymentRES payOpenId(PaymentREQ paymentREQ) {
         Map<String,String> data = Maps.newHashMap();
-        JSONObject jsonObject;
+        JSONObject jsonObject = null;
         try {
             String openId = paymentAuthorizeService.getOpenId(paymentREQ.getUserNo());
             if(StringUtils.isNotBlank(openId)){
                 data.put("openId",openId);
                 return PaymentRES.of(String.valueOf(PaymentBizException.SUCCESS), data, "获取openid成功!");
             }
-            jsonObject = MDPaymentUtils.openId(paymentREQ.getOpenidUrl());
+            if (paymentREQ.getPayType().equals(PayTypeEnum.WX_PROGRAM_PAY.name())) {
+                jsonObject = MDPaymentUtils.openId(paymentREQ.getOpenidUrl(),MDPayConfigEnum.MD_WX_PROGRAM_PAY.getPayType()
+                        ,MDPayConfigEnum.MD_WX_PROGRAM_PAY.getMerchantNo(),MDPayConfigEnum.MD_WX_PROGRAM_PAY.getKey());
+            }else if(paymentREQ.getPayType().equals(PayTypeEnum.WX_ACCOUNT_PAY.name())){
+                jsonObject = MDPaymentUtils.openId(paymentREQ.getOpenidUrl(),MDPayConfigEnum.MD_WX_ACCOUNT_PAY.getPayType()
+                        ,MDPayConfigEnum.MD_WX_ACCOUNT_PAY.getMerchantNo(),MDPayConfigEnum.MD_WX_ACCOUNT_PAY.getKey());
+            }
             if(null != jsonObject
                     &&  jsonObject.getBoolean("result")  && jsonObject.getInteger("code") == 200){
                 String redirectUrl = jsonObject.getJSONObject("data").getString("redirectUrl");
@@ -73,16 +80,4 @@ public class MDPaymentProcessor extends PaymentProcessorTemplate implements Paym
         return PaymentRES.of(String.valueOf(PaymentBizException.FAILED), "获取openid失败!");
     }
 
-    @Override
-    public PaymentRES paySign(PaymentREQ paymentREQ) {
-        String param = (String)paymentREQ.getParam();
-        Map<String,Object> paramMap = Maps.newHashMap();
-        paramMap.put("appId",PayMDConfiguration.APP_ID);
-        paramMap.put("timeStamp",String.valueOf(DateUtils.getSecondTimestamp(new Date())));
-        paramMap.put("nonceStr",WXCommonUtils.createNonceStr());
-        paramMap.put("signType", SecurityEnum.MD5.getDesc());
-        paramMap.put("package",param);
-        paramMap.put("paySign",WXCommonUtils.md5Sign(paramMap, PayMDConfiguration.KEY));
-        return PaymentRES.of(String.valueOf(PaymentBizException.SUCCESS), paramMap, "获取签名成功!");
-    }
 }

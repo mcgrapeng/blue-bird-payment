@@ -60,7 +60,7 @@ public class PayProcessorTest {
         param.put("amount","0.01");
         try {
             String sign = MDPaymentSign.signRequest(param, PayMDConfiguration.KEY);
-            paymentProcessor.findPaymentProcessor(PayWayEnum.MIAODAO.name()).completePay("","","","1231231","100000000000000","10010001000",PayMDConfiguration.MERCHANT_NO
+            paymentProcessor.findPaymentProcessor(PayWayEnum.MIAODAO.name()).completePay("","","","1231231","100000000000000","10010001000","100"
                     ,"0.01", TradeStatusEnum.WAITING_PAYMENT.name(),"2019-09-28 10:00:00"
                     ,sign,"fail");
         } catch (IOException e) {

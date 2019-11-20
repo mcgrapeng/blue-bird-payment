@@ -6,31 +6,18 @@ package com.zhangpeng.payment.center;
  */
 public final class PayMDConfiguration {
 
-    //商户号 18616216339  秘钥88d2e2069f8fbb6130e7d5d72e61a519  机构号86038810   --- 小程序
-    //商户号 18616216341 秘钥aa403187f550527bf7cda6affb0660ab 机构号86038810  --公众号
+    //商户号 18616216340   秘钥025d10134fd3f986b84657b9b3bf9f7a  机构号86038810   --- 小程序
+    //商户号 18616216341   秘钥aa403187f550527bf7cda6affb0660ab 机构号86038810  --公众号
 
-    /**商户号*/
-    public final static String  MERCHANT_NO = "18616216341";
 
     /**密钥*/
     public final static String  KEY = "aa403187f550527bf7cda6affb0660ab";
 
     /**机构号*/
-    public final static String  ORGAN_NO = "86038810";
+    public final static String  ORGAN_NO = "8416950664151";
 
     /**支付产品号*/
     public final static String PRODUCT_NO = "35";
-
-    /**支付方式*/
-    public final static String PAY_WAY = "WX";
-
-    /**接入方式*/
-    public final static String ACCESS_MODE = "SUBSCRIPTION";
-
-
-    /**appid*/
-    public final static String  APP_ID = "wxd678efh567hg6787";
-
 
 
     public final static String ORDER_URL = "http://open.miaodaochina.com/unify/mini/pay";

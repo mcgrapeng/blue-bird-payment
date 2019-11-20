@@ -11,15 +11,15 @@ public  class AbstarctPaymentProcessorFactory  implements PaymentProcessorFactor
     @Autowired
     private MDPaymentProcessor mdPaymentProcessor;
 
-    @Autowired
-    private WXPaymentProcessor wxPaymentProcessor;
+   // @Autowired
+  //  private WXPaymentProcessor wxPaymentProcessor;
 
 
     public PaymentProcessor findPaymentProcessor(String payWayCode){
         if(PayWayEnum.MIAODAO.name().equals(payWayCode)){
            return mdPaymentProcessor;
         }else if(PayWayEnum.WEIXIN.name().equals(payWayCode)){
-           return wxPaymentProcessor;
+         //  return wxPaymentProcessor;
         }else if(PayWayEnum.ALIPAY.name().equals(payWayCode)){
             //
         }
