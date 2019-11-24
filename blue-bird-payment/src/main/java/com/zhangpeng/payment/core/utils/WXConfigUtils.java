@@ -1,6 +1,5 @@
 package com.zhangpeng.payment.core.utils;
 
-import com.zhangpeng.payment.center.PayMDConfiguration;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
@@ -21,7 +20,7 @@ public class WXConfigUtils {
 
     public static final String QUERY_ORDER_URL = "https://api.mch.weixin.qq.com/pay/orderquery";
 
-    public static final String PAY_KEY = PayMDConfiguration.KEY;
+    public static final String PAY_KEY = null;
 
     private WXConfigUtils() {
 

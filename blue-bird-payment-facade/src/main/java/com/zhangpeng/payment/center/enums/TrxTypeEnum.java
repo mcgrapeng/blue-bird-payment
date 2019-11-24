@@ -42,7 +42,6 @@ public enum TrxTypeEnum {
         return enumMap;
     }
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
     public static List toList() {
         TrxTypeEnum[] ary = TrxTypeEnum.values();
         List list = new ArrayList();

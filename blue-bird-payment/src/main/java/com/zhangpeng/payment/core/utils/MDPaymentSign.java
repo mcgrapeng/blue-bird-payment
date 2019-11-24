@@ -1,8 +1,9 @@
 package com.zhangpeng.payment.core.utils;
 
 import com.alibaba.fastjson.JSON;
-import com.zhangpeng.payment.center.PayMDConfiguration;
 import com.zhangpeng.payment.center.ex.PaymentBizException;
+import com.zhangpeng.payment.core.PayMDConfiguration;
+import com.zhangpeng.payment.core.enums.MDPayConfigEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -85,9 +86,15 @@ public final class MDPaymentSign {
      * @param sign
      * @return
      */
-    public static boolean verifySign(Map<String,String>  param , String sign){
+    public static boolean verifySign(Map<String,String>  param , String  payTypeCode ,String sign){
         try {
-            String compareSign = MDPaymentSign.signRequest(param, PayMDConfiguration.KEY);
+            String key = null;
+            if(payTypeCode.equalsIgnoreCase(MDPayConfigEnum.MD_WX_PROGRAM_PAY.getPayType())){
+                key = MDPayConfigEnum.MD_WX_PROGRAM_PAY.getKey();
+            }else if(payTypeCode.equalsIgnoreCase(MDPayConfigEnum.MD_WX_PROGRAM_PAY.getPayType())){
+                key = MDPayConfigEnum.MD_WX_PROGRAM_PAY.getKey();
+            }
+            String compareSign = MDPaymentSign.signRequest(param, key);
             if(!compareSign.equals(sign)){
                 throw new PaymentBizException(PaymentBizException.TRADE_PAY_SIGN_ERROR,"签名非法");
             }

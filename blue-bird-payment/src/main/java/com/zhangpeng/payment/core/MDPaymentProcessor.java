@@ -30,12 +30,12 @@ public class MDPaymentProcessor extends PaymentProcessorTemplate implements Paym
                     //生成预付单，向秒到发起
                     jsonObject = MDPaymentUtils.pay(MDPayConfigEnum.MD_WX_PROGRAM_PAY.getMerchantNo()
                             , MDPayConfigEnum.MD_WX_PROGRAM_PAY.getAppId(), MDPayConfigEnum.MD_WX_PROGRAM_PAY.getAccessMode(), MDPayConfigEnum.MD_WX_PROGRAM_PAY.getKey()
-                            , MDPayConfigEnum.MD_WX_PROGRAM_PAY.getPayType(),  paymentREQ.getOpenId(),paymentREQ.getTrxNo(), paymentREQ.getOrderAmount().toPlainString()
+                            , MDPayConfigEnum.MD_WX_PROGRAM_PAY.getPiType(),  paymentREQ.getOpenId(),paymentREQ.getTrxNo(), paymentREQ.getOrderAmount().toPlainString()
                             , paymentREQ.getMerchantOrderNo(), paymentREQ.getNotifyUrl());
                 }else if(paymentWay.getPayTypeCode().equals(PayTypeEnum.WX_ACCOUNT_PAY.name())){
                     jsonObject = MDPaymentUtils.pay(MDPayConfigEnum.MD_WX_ACCOUNT_PAY.getMerchantNo()
                             , MDPayConfigEnum.MD_WX_ACCOUNT_PAY.getAppId(), MDPayConfigEnum.MD_WX_ACCOUNT_PAY.getAccessMode(), MDPayConfigEnum.MD_WX_ACCOUNT_PAY.getKey()
-                            , MDPayConfigEnum.MD_WX_ACCOUNT_PAY.getPayType(),  paymentREQ.getOpenId(),paymentREQ.getTrxNo(), paymentREQ.getOrderAmount().toPlainString()
+                            , MDPayConfigEnum.MD_WX_ACCOUNT_PAY.getPiType(),  paymentREQ.getOpenId(),paymentREQ.getTrxNo(), paymentREQ.getOrderAmount().toPlainString()
                             , paymentREQ.getMerchantOrderNo(), paymentREQ.getNotifyUrl());
                 }
             } catch (Exception e) {
@@ -62,10 +62,10 @@ public class MDPaymentProcessor extends PaymentProcessorTemplate implements Paym
                 return PaymentRES.of(String.valueOf(PaymentBizException.SUCCESS), data, "获取openid成功!");
             }
             if (paymentREQ.getPayType().equals(PayTypeEnum.WX_PROGRAM_PAY.name())) {
-                jsonObject = MDPaymentUtils.openId(paymentREQ.getOpenidUrl(),MDPayConfigEnum.MD_WX_PROGRAM_PAY.getPayType()
+                jsonObject = MDPaymentUtils.openId(paymentREQ.getOpenidUrl(),MDPayConfigEnum.MD_WX_PROGRAM_PAY.getPiType()
                         ,MDPayConfigEnum.MD_WX_PROGRAM_PAY.getMerchantNo(),MDPayConfigEnum.MD_WX_PROGRAM_PAY.getKey());
             }else if(paymentREQ.getPayType().equals(PayTypeEnum.WX_ACCOUNT_PAY.name())){
-                jsonObject = MDPaymentUtils.openId(paymentREQ.getOpenidUrl(),MDPayConfigEnum.MD_WX_ACCOUNT_PAY.getPayType()
+                jsonObject = MDPaymentUtils.openId(paymentREQ.getOpenidUrl(),MDPayConfigEnum.MD_WX_ACCOUNT_PAY.getPiType()
                         ,MDPayConfigEnum.MD_WX_ACCOUNT_PAY.getMerchantNo(),MDPayConfigEnum.MD_WX_ACCOUNT_PAY.getKey());
             }
             if(null != jsonObject

@@ -34,7 +34,14 @@ public enum TradeStatusEnum {
     /**
      * 等待支付
      */
-    WAITING_PAYMENT("等待支付");
+    WAITING_PAYMENT("等待支付"),
+
+
+    /**
+     * 支付中
+     */
+    PAYMENT("支付中");
+
 
     /** 描述 */
     private String desc;

@@ -11,9 +11,9 @@ import java.util.Map;
  */
 public enum PayTypeEnum {
 
-    WX_PROGRAM_PAY("MIAODAO","微信小程序"),
-    WX_ACCOUNT_PAY("MIAODAO","微信公众号"),
-    ALI_ACCOUNT_PAY("MIAODAO","阿里生活号"),
+    WX_PROGRAM_PAY(PayWayEnum.MIAODAO.name(),"微信小程序"),
+    WX_ACCOUNT_PAY(PayWayEnum.MIAODAO.name(),"微信公众号"),
+    ALI_ACCOUNT_PAY(PayWayEnum.MIAODAO.name(),"阿里生活号"),
     ;
 
     /** 所属支付方式 */

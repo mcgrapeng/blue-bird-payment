@@ -7,6 +7,8 @@ public class PaymentBizException extends BizException{
 
     private static final long serialVersionUID = 3536909333010163563L;
 
+    /** 参数不合法 **/
+    public static final int TRADE_PAY_PARAMS_ERROR = 300;
     /** 错误的支付方式 **/
     public static final int TRADE_PAY_WAY_ERROR = 102;
     /** 微信异常 **/

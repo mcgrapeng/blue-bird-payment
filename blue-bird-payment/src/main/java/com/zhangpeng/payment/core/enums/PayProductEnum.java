@@ -1,6 +1,6 @@
-package com.zhangpeng.payment.center.enums;
+package com.zhangpeng.payment.core.enums;
 
-import com.zhangpeng.payment.center.PayMDConfiguration;
+import com.zhangpeng.payment.core.PayMDConfiguration;
 
 /**
  * 接入的支付产品枚举

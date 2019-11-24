@@ -1,7 +1,5 @@
 package com.zhangpeng.payment.center.enums;
 
-import com.zhangpeng.payment.center.PayMDConfiguration;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -13,9 +11,9 @@ import java.util.Map;
  */
 public enum MerchantEnum {
 
-    KKD("100","卡卡得"),
+    KKD_PROGRAM("18616216340","卡卡得-小程序"),
 
-    KKD_TEST("13235880088","卡卡得测试");
+    KKD_ACCOUNT("18616216341","卡卡得-公众号");
 
     private String code;
     /** 描述 */

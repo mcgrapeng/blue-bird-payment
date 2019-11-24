@@ -11,6 +11,7 @@ import com.zhangpeng.payment.center.enums.*;
 import com.zhangpeng.payment.center.ex.PaymentBizException;
 import com.zhangpeng.payment.center.utils.DateUtils;
 import com.zhangpeng.payment.core.enums.MDPayConfigEnum;
+import com.zhangpeng.payment.core.enums.PayProductEnum;
 import com.zhangpeng.payment.core.utils.MDPaymentSign;
 import com.zhangpeng.payment.core.utils.MDPaymentUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -171,7 +172,7 @@ public abstract class PaymentProcessorTemplate implements PaymentProcessor {
         PaymentWay payWay = queryPaymentWay(payProductEnum.getProductNo(), paymentREQ.getPayType());//支付产品下的支付通道，支付通道下的支付类型
         if (payWay == null) {
             return PaymentRES.of(String.valueOf(PaymentBizException.TRADE_PAY_WAY_ERROR)
-                    , "用户支付方式配置有误");
+                    , "用户支付通道配置有误");
         }
 
         if (payWay.getStatus().equals(PublicStatusEnum.UNACTIVE.name())) {
@@ -180,7 +181,7 @@ public abstract class PaymentProcessorTemplate implements PaymentProcessor {
         }
 
         //生产订单记录
-        PaymentOrder paymentOrder = null;
+        PaymentOrder paymentOrder;
         try {
             paymentOrder = paymentOrderService.selectByMerchantNoAndMerchantOrderNo(paymentREQ.getMerchantNo(), paymentREQ.getMerchantOrderNo());
         } catch (Exception e) {
@@ -244,7 +245,7 @@ public abstract class PaymentProcessorTemplate implements PaymentProcessor {
      */
     private PaymentWay queryPaymentWay(String payProductNo, String payType) {
         PayTypeEnum payTypeEnum = PayTypeEnum.getEnum(payType);/**通过支付类型name获取支付类型枚举,前端传WX_PROGRAM_PAY*/
-        PaymentWay payWay = null;//支付产品下的支付通道，支付通道下的支付类型
+        PaymentWay payWay;//支付产品下的支付通道，支付通道下的支付类型
         try {
             payWay = paymentWayService.getPaymentWay(payProductNo, payTypeEnum.getWay(), payTypeEnum.name());
         } catch (Exception e) {
@@ -268,14 +269,12 @@ public abstract class PaymentProcessorTemplate implements PaymentProcessor {
         paymentToken.setPaySuccessTime(timeEnd);
         paymentToken.setStatus(TradeStatusEnum.SUCCESS.name());
         paymentToken.setBankOrderNo(tradeOrderNo);
-        // paymentToken.setReturnUrl(StringUtils.join(paymentToken.getReturnUrl(),tradeOrderNo));
         paymentTokenService.updatePaymentTokenStatus(paymentToken.getTrxNo(), paymentToken.getStatus());
 
         PaymentOrder paymentOrder = paymentOrderService.selectByMerchantNoAndMerchantOrderNo(
                 paymentToken.getMerchantNo(), paymentToken.getMerchantOrderNo());
         paymentOrder.setStatus(TradeStatusEnum.SUCCESS.name());
         paymentOrder.setTrxNo(paymentToken.getTrxNo());// 设置支付平台支付流水号
-        // paymentOrder.setReturnUrl(StringUtils.join( paymentOrder.getReturnUrl(),tradeOrderNo));
         paymentOrderService.updatePaymentOrderStatus(paymentOrder.getMerchantNo(), paymentOrder.getMerchantOrderNo(), paymentOrder.getStatus());
     }
 
@@ -312,11 +311,12 @@ public abstract class PaymentProcessorTemplate implements PaymentProcessor {
      */
     @Transactional
     @Override
-    public PaymentRES completePay(String payProductNo, String payTypeCode, String tradeNo, String tradeOrderNo, String trxNo, String merchantOrderNo, String merchantNo
+    public PaymentRES completePay(String payProductNo, String payTypeCode, String tradeNo, String tradeOrderNo
+            , String trxNo, String merchantOrderNo, String merchantNo
             , String orderAmount, String payStatus, String payFinishTime, String sign, String resultCode) {
 
         // 根据交易流水号获取支付信息
-        PaymentToken paymentToken = null;
+        PaymentToken paymentToken;
         try {
             paymentToken = paymentTokenService.queryPaymentTokenByTrxNo(trxNo);
         } catch (Exception e) {
@@ -325,27 +325,8 @@ public abstract class PaymentProcessorTemplate implements PaymentProcessor {
                     , "网络异常，请稍后重试");
         }
         if (paymentToken == null) {
-            PaymentWay payWay = queryPaymentWay(payProductNo, payTypeCode);//支付产品下的支付通道，支付通道下的支付类型
-            if (payWay == null) {
-                return PaymentRES.of(String.valueOf(PaymentBizException.TRADE_PAY_WAY_ERROR)
-                        , "用户支付方式配置有误");
-            }
-            if (payWay.getPayWayCode().equals(PayWayEnum.MIAODAO.name())) {
-                JSONObject jsonObject = null;
-                //查询秒到支付订单
-                if(payWay.getPayTypeCode().equalsIgnoreCase(PayTypeEnum.WX_PROGRAM_PAY.name())){
-                    jsonObject = MDPaymentUtils.queryOrder(MDPayConfigEnum.MD_WX_PROGRAM_PAY.getMerchantNo(),merchantOrderNo,MDPayConfigEnum.MD_WX_PROGRAM_PAY.getKey());
-                }else if(payWay.getPayTypeCode().equalsIgnoreCase(PayTypeEnum.WX_ACCOUNT_PAY.name())){
-                    jsonObject = MDPaymentUtils.queryOrder(MDPayConfigEnum.MD_WX_ACCOUNT_PAY.getMerchantNo(),merchantOrderNo,MDPayConfigEnum.MD_WX_ACCOUNT_PAY.getKey());
-                }
-
-                if (null != jsonObject
-                        && jsonObject.getBoolean("result") && jsonObject.getInteger("code") == 200) {
-                    Object data = jsonObject.get("data");
-                    if (null == data) {
-                        return PaymentRES.of(String.valueOf(PaymentBizException.TRADE_PAY_NO_ERROR), "非法交易流水,交易流水号不存在");
-                    }
-                }
+            if(!isQueryUniteOrder(payProductNo , payTypeCode , merchantOrderNo)){
+                return PaymentRES.of(String.valueOf(PaymentBizException.TRADE_PAY_NO_ERROR), "非法交易流水,交易流水号不存在");
             }
         }
 
@@ -371,7 +352,7 @@ public abstract class PaymentProcessorTemplate implements PaymentProcessor {
         param.put("payStatus", payStatus);
         param.put("amount", orderAmount);
 
-        if (MDPaymentSign.verifySign(param, sign)) {
+        if (MDPaymentSign.verifySign(param, payTypeCode,sign)) {
             if (TradeStatusEnum.SUCCESS.name().equalsIgnoreCase(resultCode)) {// 业务结果
                 // 成功
                 Date timeEnd = null;
@@ -422,26 +403,8 @@ public abstract class PaymentProcessorTemplate implements PaymentProcessor {
         }
 
         if (paymentToken == null) {
-            PaymentWay payWay = queryPaymentWay(payProductNo, payTypeCode);//支付产品下的支付通道，支付通道下的支付类型
-            if (payWay == null) {
-                return PaymentRES.of(String.valueOf(PaymentBizException.TRADE_PAY_WAY_ERROR)
-                        , "用户支付方式配置有误");
-            }
-            if (payWay.getPayWayCode().equals(PayWayEnum.MIAODAO.name())) {
-                //查询秒到支付订单
-                JSONObject jsonObject = null;
-                if(payWay.getPayTypeCode().equalsIgnoreCase(PayTypeEnum.WX_PROGRAM_PAY.name())){
-                    jsonObject = MDPaymentUtils.queryOrder(MDPayConfigEnum.MD_WX_PROGRAM_PAY.getMerchantNo(),merchantOrderNo,MDPayConfigEnum.MD_WX_PROGRAM_PAY.getKey());
-                }else if(payWay.getPayTypeCode().equalsIgnoreCase(PayTypeEnum.WX_ACCOUNT_PAY.name())){
-                    jsonObject = MDPaymentUtils.queryOrder(MDPayConfigEnum.MD_WX_ACCOUNT_PAY.getMerchantNo(),merchantOrderNo,MDPayConfigEnum.MD_WX_ACCOUNT_PAY.getKey());
-                }
-                if (null != jsonObject
-                        && jsonObject.getBoolean("result") && jsonObject.getInteger("code") == 200) {
-                    Object ret = jsonObject.get("data");
-                    if (null == ret) {
-                        return PaymentRES.of(String.valueOf(PaymentBizException.TRADE_PAY_NO_ERROR), "非法交易流水,交易流水号不存在");
-                    }
-                }
+            if(!isQueryUniteOrder(payProductNo , payTypeCode , merchantOrderNo)){
+                return PaymentRES.of(String.valueOf(PaymentBizException.TRADE_PAY_NO_ERROR), "非法交易流水,交易流水号不存在");
             }
         }
 
@@ -449,7 +412,6 @@ public abstract class PaymentProcessorTemplate implements PaymentProcessor {
         data.put("orderNo", paymentToken.getOrderAmount());//订单号
         data.put("orderAmount", paymentToken.getOrderAmount());// 订单金额
         data.put("productName", paymentToken.getProductName());// 产品名称
-//        data.put("returnUrl",paymentToken.getReturnUrl());
 
         PaymentOrder paymentOrder = null;
         try {
@@ -461,33 +423,26 @@ public abstract class PaymentProcessorTemplate implements PaymentProcessor {
                     , "网络异常，请稍后重试");
         }
 
+        String orderStatus;
         if (paymentOrder == null) {
-            PaymentWay payWay = queryPaymentWay(payProductNo, payTypeCode);//支付产品下的支付通道，支付通道下的支付类型
-            if (payWay == null) {
-                return PaymentRES.of(String.valueOf(PaymentBizException.TRADE_PAY_WAY_ERROR)
-                        , "用户支付方式配置有误");
+            JSONObject jsonObject = queryUniteOrder(payProductNo, payTypeCode, merchantOrderNo);
+            if(null == jsonObject){
+                return PaymentRES.of(String.valueOf(PaymentBizException.TRADE_PAY_NO_ERROR), "非法交易流水,交易流水号不存在");
             }
-            if (payWay.getPayWayCode().equals(PayWayEnum.MIAODAO.name())) {
-                //查询秒到支付订单
-                JSONObject jsonObject = null;
-                if(payWay.getPayTypeCode().equalsIgnoreCase(PayTypeEnum.WX_PROGRAM_PAY.name())){
-                    jsonObject = MDPaymentUtils.queryOrder(MDPayConfigEnum.MD_WX_PROGRAM_PAY.getMerchantNo(),merchantOrderNo,MDPayConfigEnum.MD_WX_PROGRAM_PAY.getKey());
-                }else if(payWay.getPayTypeCode().equalsIgnoreCase(PayTypeEnum.WX_ACCOUNT_PAY.name())){
-                    jsonObject = MDPaymentUtils.queryOrder(MDPayConfigEnum.MD_WX_ACCOUNT_PAY.getMerchantNo(),merchantOrderNo,MDPayConfigEnum.MD_WX_ACCOUNT_PAY.getKey());
-                }
-                if (null != jsonObject
-                        && jsonObject.getBoolean("result") && jsonObject.getInteger("code") == 200) {
-                    Object ret = jsonObject.get("data");
-                    if (null == ret) {
-                        return PaymentRES.of(String.valueOf(PaymentBizException.TRADE_ORDER_NO_ERROR)
-                                , "非法订单,订单不存在");
-                    }
+            orderStatus = jsonObject.getString("orderStatus");
+            if(StringUtils.isNotBlank(orderStatus)){
+                if("FINISH".equalsIgnoreCase(orderStatus)){
+                    orderStatus = TradeStatusEnum.SUCCESS.name();
+                }else{
+                    orderStatus = TradeStatusEnum.PAYMENT.name();
                 }
             }
+        }else{
+            TradeStatusEnum tradeStatusEnum = TradeStatusEnum.getEnum(paymentOrder.getStatus());
+            orderStatus = tradeStatusEnum.name();
         }
 
-        TradeStatusEnum tradeStatusEnum = TradeStatusEnum.getEnum(paymentOrder.getStatus());
-        data.put("payStatus", tradeStatusEnum.name());
+        data.put("payStatus", orderStatus);
         return PaymentRES.of(String.valueOf(PaymentBizException.SUCCESS), data, "success");
     }
 
@@ -515,4 +470,70 @@ public abstract class PaymentProcessorTemplate implements PaymentProcessor {
         return PaymentRES.of(String.valueOf(PaymentBizException.FAILED)
                 , "关单失败！");
     }
+
+
+    /**
+     * 张三丰
+     * 是否存在统一订单
+     * @param payProductNo
+     * @param payTypeCode
+     * @param merchantOrderNo
+     * @return
+     */
+    private boolean  isQueryUniteOrder(String payProductNo , String payTypeCode , String merchantOrderNo){
+        return queryUniteOrder(payProductNo , payTypeCode , merchantOrderNo)  != null;
+    }
+
+
+    /**
+     * 张三丰
+     * 查询统一订单
+     * @param payProductNo
+     * @param payTypeCode
+     * @param merchantOrderNo
+     * @return
+     */
+    private JSONObject  queryUniteOrder(String payProductNo , String payTypeCode , String merchantOrderNo){
+        PaymentWay payWay = queryPaymentWay(payProductNo, payTypeCode);//支付产品下的支付通道，支付通道下的支付类型
+        if (payWay == null) {
+            log.error("统一订单查询,支付方式配置有误，payProductNo = {} , payTypeCode = {}",payProductNo,payTypeCode);
+            return null;
+        }
+        String payWayCode = payWay.getPayWayCode();
+
+        if(StringUtils.isBlank(merchantOrderNo)
+                || StringUtils.isBlank(payWayCode)
+                || StringUtils.isBlank(payTypeCode)){
+            log.error("统一订单查询，merchantOrderNo = {} , payWayCode = {} , payTypeCode = {}",merchantOrderNo,payWayCode,payTypeCode);
+            return null;
+        }
+
+        if (payWayCode.equals(PayWayEnum.MIAODAO.name())) {
+            JSONObject jsonObject = null;
+            //查询秒到支付订单
+            if(payTypeCode.equalsIgnoreCase(PayTypeEnum.WX_PROGRAM_PAY.name())){
+                try {
+                    jsonObject = MDPaymentUtils.queryOrder(MDPayConfigEnum.MD_WX_PROGRAM_PAY.getMerchantNo()
+                            ,merchantOrderNo,MDPayConfigEnum.MD_WX_PROGRAM_PAY.getKey());
+                } catch (Exception e) {
+                    log.error("统一订单查询发生异常，merchantOrderNo = {} , payWayCode = {} , payTypeCode = {}",merchantOrderNo,payWayCode,payTypeCode,e);
+                    return null;
+                }
+            }else if(payTypeCode.equalsIgnoreCase(PayTypeEnum.WX_ACCOUNT_PAY.name())){
+                try {
+                    jsonObject = MDPaymentUtils.queryOrder(MDPayConfigEnum.MD_WX_ACCOUNT_PAY.getMerchantNo()
+                            ,merchantOrderNo,MDPayConfigEnum.MD_WX_ACCOUNT_PAY.getKey());
+                } catch (Exception e) {
+                    log.error("统一订单查询发生异常，merchantOrderNo = {} , payWayCode = {} , payTypeCode = {}",merchantOrderNo,payWayCode,payTypeCode,e);
+                    return null;
+                }
+            }
+            if (null != jsonObject
+                    && jsonObject.getBoolean("result") && jsonObject.getInteger("code") == 200) {
+              return jsonObject;
+            }
+        }
+        return null;
+    }
+
 }
