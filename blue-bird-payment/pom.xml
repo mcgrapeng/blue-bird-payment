@@ -424,7 +424,7 @@
 
 
     <build>
-        <finalName>blue-bird-paymentcenter</finalName>
+        <finalName>blue-bird-service-payment</finalName>
         <plugins>
             <!-- 打包jar文件时，配置manifest文件，加入lib包的jar依赖 -->
             <plugin>
