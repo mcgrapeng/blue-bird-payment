@@ -5,8 +5,8 @@ import com.google.common.collect.Maps;
 import com.zhangpeng.payment.center.PaymentProcessor;
 import com.zhangpeng.payment.center.PaymentREQ;
 import com.zhangpeng.payment.center.PaymentRES;
+import com.zhangpeng.payment.center.enums.MDPayConfigEnum;
 import com.zhangpeng.payment.center.enums.TradeStatusEnum;
-import com.zhangpeng.payment.core.enums.MDPayConfigEnum;
 import com.zhangpeng.payment.core.utils.MDPaymentSign;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -26,13 +26,13 @@ public class PayProcessorTest {
     @Autowired
     private PaymentProcessor paymentProcessor;
 
-    @Test public void pay(){
+    @Test public void pay(String productNo){
 
         PaymentREQ req = new PaymentREQ();
         req.setAppId(MDPayConfigEnum.MD_WX_PROGRAM_PAY.getAppId());
         //req.setAccessMode(MDPayConfigEnum.MD_WX_PROGRAM_PAY.getAccessMode());
         req.setMerchantNo(MDPayConfigEnum.MD_WX_PROGRAM_PAY.getMerchantNo());
-        req.setProductNo(PayMDConfiguration.PRODUCT_NO);
+        req.setProductNo(productNo);
         req.setPayType(MDPayConfigEnum.MD_WX_PROGRAM_PAY.getPayType());
         req.setMerchantName("卡卡得");
         req.setMerchantOrderNo("10010001000333");

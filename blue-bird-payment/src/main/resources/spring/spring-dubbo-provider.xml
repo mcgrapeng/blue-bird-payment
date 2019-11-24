@@ -14,7 +14,7 @@
     <!-- 这里使用的注册中心是zookeeper -->
     <!--<dubbo:registry protocol="zookeeper" address="zookeeper://127.0.0.1:2181" />-->
 
-    <dubbo:registry   protocol="redis" address="127.0.0.1:6379"   password="1qazXSW@"   username="zhangpeng"/>
+    <dubbo:registry   protocol="redis" address="127.0.0.1:6379" />
 
     <!-- 用dubbo协议在20880端口暴露服务 -->
     <dubbo:protocol name="dubbo" port="20887" />
@@ -36,6 +36,8 @@
     <dubbo:service retries="0" interface="com.zhangpeng.payment.center.PaymentProcessor"
                    ref="MDPaymentProcessor"  timeout="60000" group="MD"/>
 
+    <dubbo:service retries="0" interface="com.zhangpeng.payment.center.PaymentAuthorizeProcessor"
+                   ref="MDPaymentProcessor"  timeout="60000" group="MD"/>
 
 
 </beans>

@@ -1,4 +1,4 @@
-package com.zhangpeng.payment.core;
+package com.zhangpeng.payment.center;
 
 /**
  * @desc   秒到支付参数配置

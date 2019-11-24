@@ -10,7 +10,6 @@ import com.zhangpeng.payment.center.domain.PaymentWay;
 import com.zhangpeng.payment.center.enums.*;
 import com.zhangpeng.payment.center.ex.PaymentBizException;
 import com.zhangpeng.payment.center.utils.DateUtils;
-import com.zhangpeng.payment.core.enums.MDPayConfigEnum;
 import com.zhangpeng.payment.core.enums.PayProductEnum;
 import com.zhangpeng.payment.core.utils.MDPaymentSign;
 import com.zhangpeng.payment.core.utils.MDPaymentUtils;

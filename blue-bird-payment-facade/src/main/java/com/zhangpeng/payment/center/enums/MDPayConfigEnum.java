@@ -1,16 +1,15 @@
-package com.zhangpeng.payment.core.enums;
+package com.zhangpeng.payment.center.enums;
 
-import com.zhangpeng.payment.center.enums.MerchantEnum;
-import com.zhangpeng.payment.center.enums.PayTypeEnum;
-import com.zhangpeng.payment.core.PayMDConfiguration;
+
+import com.zhangpeng.payment.center.PayMDConfiguration;
 
 /**
  * 秒到支付配置参数
  */
-public enum  MDPayConfigEnum {
+public enum MDPayConfigEnum {
 
     MD_WX_ACCOUNT_PAY(PayTypeEnum.WX_ACCOUNT_PAY.name(),"WX",MerchantEnum.KKD_ACCOUNT.getCode(),"aa403187f550527bf7cda6affb0660ab","wx925e07c16ab2eb6c","SUBSCRIPTION", PayMDConfiguration.ORGAN_NO,"微信公众号支付"),
-    MD_WX_PROGRAM_PAY(PayTypeEnum.WX_PROGRAM_PAY.name(), "WX",MerchantEnum.KKD_PROGRAM.getCode(),"025d10134fd3f986b84657b9b3bf9f7a","wxa3da6581820b3143","MINIPROGRAM",PayMDConfiguration.ORGAN_NO,"微信小程序支付"),
+    MD_WX_PROGRAM_PAY(PayTypeEnum.WX_PROGRAM_PAY.name(), "WX",MerchantEnum.KKD_PROGRAM.getCode(),"025d10134fd3f986b84657b9b3bf9f7a","wxa3da6581820b3143","MINIPROGRAM", PayMDConfiguration.ORGAN_NO,"微信小程序支付"),
     ;
 
     private String payType;

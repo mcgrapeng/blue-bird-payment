@@ -7,10 +7,10 @@ import com.zhangpeng.payment.center.PaymentAuthorizeProcessor;
 import com.zhangpeng.payment.center.PaymentREQ;
 import com.zhangpeng.payment.center.PaymentRES;
 import com.zhangpeng.payment.center.domain.PaymentWay;
+import com.zhangpeng.payment.center.enums.MDPayConfigEnum;
 import com.zhangpeng.payment.center.enums.PayTypeEnum;
 import com.zhangpeng.payment.center.enums.PayWayEnum;
 import com.zhangpeng.payment.center.ex.PaymentBizException;
-import com.zhangpeng.payment.core.enums.MDPayConfigEnum;
 import com.zhangpeng.payment.core.utils.MDPaymentUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -63,7 +63,7 @@ public class MDPaymentProcessor extends PaymentProcessorTemplate implements Paym
             }
             if (paymentREQ.getPayType().equals(PayTypeEnum.WX_PROGRAM_PAY.name())) {
                 jsonObject = MDPaymentUtils.openId(paymentREQ.getOpenidUrl(),MDPayConfigEnum.MD_WX_PROGRAM_PAY.getPiType()
-                        ,MDPayConfigEnum.MD_WX_PROGRAM_PAY.getMerchantNo(),MDPayConfigEnum.MD_WX_PROGRAM_PAY.getKey());
+                        ,MDPayConfigEnum.MD_WX_PROGRAM_PAY.getMerchantNo(), MDPayConfigEnum.MD_WX_PROGRAM_PAY.getKey());
             }else if(paymentREQ.getPayType().equals(PayTypeEnum.WX_ACCOUNT_PAY.name())){
                 jsonObject = MDPaymentUtils.openId(paymentREQ.getOpenidUrl(),MDPayConfigEnum.MD_WX_ACCOUNT_PAY.getPiType()
                         ,MDPayConfigEnum.MD_WX_ACCOUNT_PAY.getMerchantNo(),MDPayConfigEnum.MD_WX_ACCOUNT_PAY.getKey());
