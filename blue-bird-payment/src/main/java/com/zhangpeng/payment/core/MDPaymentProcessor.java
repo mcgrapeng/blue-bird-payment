@@ -45,7 +45,8 @@ public class MDPaymentProcessor extends PaymentProcessorTemplate implements Paym
             }
             if (null != jsonObject
                     && jsonObject.getBoolean("result") && jsonObject.getInteger("code") == 200) {
-                return PaymentRES.of(String.valueOf(PaymentBizException.SUCCESS), jsonObject, "支付成功!");
+                JSONObject data = jsonObject.getJSONObject("data");
+                return PaymentRES.of(String.valueOf(PaymentBizException.SUCCESS), data, "支付成功!");
             }
         }
         return PaymentRES.of(String.valueOf(PaymentBizException.FAILED), "支付失败!");

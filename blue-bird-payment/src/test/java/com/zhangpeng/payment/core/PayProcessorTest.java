@@ -2,6 +2,7 @@ package com.zhangpeng.payment.core;
 
 import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Maps;
+import com.zhangpeng.payment.center.PayMDConfiguration;
 import com.zhangpeng.payment.center.PaymentProcessor;
 import com.zhangpeng.payment.center.PaymentREQ;
 import com.zhangpeng.payment.center.PaymentRES;
@@ -26,13 +27,13 @@ public class PayProcessorTest {
     @Autowired
     private PaymentProcessor paymentProcessor;
 
-    @Test public void pay(String productNo){
+    @Test public void pay(){
 
         PaymentREQ req = new PaymentREQ();
         req.setAppId(MDPayConfigEnum.MD_WX_PROGRAM_PAY.getAppId());
         //req.setAccessMode(MDPayConfigEnum.MD_WX_PROGRAM_PAY.getAccessMode());
         req.setMerchantNo(MDPayConfigEnum.MD_WX_PROGRAM_PAY.getMerchantNo());
-        req.setProductNo(productNo);
+        req.setProductNo(PayMDConfiguration.PRODUCT_NO);
         req.setPayType(MDPayConfigEnum.MD_WX_PROGRAM_PAY.getPayType());
         req.setMerchantName("卡卡得");
         req.setMerchantOrderNo("10010001000333");
