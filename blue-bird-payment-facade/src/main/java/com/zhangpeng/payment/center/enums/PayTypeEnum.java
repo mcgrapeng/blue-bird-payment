@@ -13,6 +13,7 @@ public enum PayTypeEnum {
 
     WX_PROGRAM_PAY(PayWayEnum.MIAODAO.name(),"微信小程序"),
     WX_ACCOUNT_PAY(PayWayEnum.MIAODAO.name(),"微信公众号"),
+    WX_APP_PAY(PayWayEnum.MIAODAO.name(),"微信app"),
     ALI_ACCOUNT_PAY(PayWayEnum.MIAODAO.name(),"阿里生活号"),
     ;
 
@@ -29,7 +30,7 @@ public enum PayTypeEnum {
     /** 描述 */
     private String desc;
 
-    private PayTypeEnum(String way,String desc) {
+    PayTypeEnum(String way,String desc) {
         this.desc = desc;
         this.way = way;
     }
