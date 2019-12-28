@@ -17,7 +17,7 @@
     <dubbo:registry   protocol="redis" address="127.0.0.1:6379" />
 
     <!-- 用dubbo协议在20880端口暴露服务 -->
-    <dubbo:protocol name="dubbo" port="20887" />
+    <dubbo:protocol name="dubbo" port="20888" />
 
     <!-- 监控的配置 -->
     <dubbo:monitor protocol="registry"></dubbo:monitor>
@@ -30,14 +30,8 @@
     <!-- 声明需要暴露的账户服务接口 -->
     <dubbo:service retries="0" interface="com.zhangpeng.payment.center.PaymentOrderService"
                    ref="paymentOrderService"  timeout="60000"/>
-    <dubbo:service retries="0" interface="com.zhangpeng.payment.center.PaymentAuthorizeService"
-                   ref="paymentAuthorizeService"  timeout="60000"/>
 
     <dubbo:service retries="0" interface="com.zhangpeng.payment.center.PaymentProcessor"
                    ref="MDPaymentProcessor"  timeout="60000" group="MD"/>
-
-    <dubbo:service retries="0" interface="com.zhangpeng.payment.center.PaymentAuthorizeProcessor"
-                   ref="MDPaymentProcessor"  timeout="60000" group="MD"/>
-
 
 </beans>
