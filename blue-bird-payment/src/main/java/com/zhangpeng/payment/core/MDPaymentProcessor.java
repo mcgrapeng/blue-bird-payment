@@ -36,47 +36,15 @@ public class MDPaymentProcessor extends PaymentProcessorTemplate {
                 }
             } catch (Exception e) {
                 log.error("秒到统一下单发生异常，paymentREQ = {} ", JSON.toJSONString(paymentREQ), e);
-                return PaymentRES.of(String.valueOf(PaymentBizException.FAILED)
+                return PaymentRES.of(PaymentBizException.FAILED
                         , "网络异常，请稍后重试");
             }
             if (null != jsonObject
                     && jsonObject.getBoolean("result") && jsonObject.getInteger("code") == 200) {
                 JSONObject data = jsonObject.getJSONObject("data");
-                return PaymentRES.of(String.valueOf(PaymentBizException.SUCCESS), data, "支付成功!");
+                return PaymentRES.of(PaymentBizException.SUCCESS, data, "支付成功!");
             }
         }
-        return PaymentRES.of(String.valueOf(PaymentBizException.FAILED), "支付失败!");
+        return PaymentRES.of(PaymentBizException.FAILED, "支付失败!");
     }
-
-/*
-    @Override
-    public PaymentRES payOpenId(PaymentREQ paymentREQ) {
-        Map<String,String> data = Maps.newHashMap();
-        JSONObject jsonObject = null;
-        try {
-            String openId = paymentAuthorizeService.getOpenId(paymentREQ.getUserNo());
-            if(StringUtils.isNotBlank(openId)){
-                data.put("openId",openId);
-                return PaymentRES.of(String.valueOf(PaymentBizException.SUCCESS), data, "获取openid成功!");
-            }
-            if (paymentREQ.getPayType().equals(PayTypeEnum.WX_PROGRAM_PAY.name())) {
-                jsonObject = MDPaymentUtils.openId(paymentREQ.getOpenidUrl(),MDPayConfigEnum.MD_WX_PROGRAM_PAY.getPiType()
-                        ,MDPayConfigEnum.MD_WX_PROGRAM_PAY.getMerchantNo(), MDPayConfigEnum.MD_WX_PROGRAM_PAY.getKey());
-            }else if(paymentREQ.getPayType().equals(PayTypeEnum.WX_ACCOUNT_PAY.name())){
-                jsonObject = MDPaymentUtils.openId(paymentREQ.getOpenidUrl(),MDPayConfigEnum.MD_WX_ACCOUNT_PAY.getPiType()
-                        ,MDPayConfigEnum.MD_WX_ACCOUNT_PAY.getMerchantNo(),MDPayConfigEnum.MD_WX_ACCOUNT_PAY.getKey());
-            }
-            if(null != jsonObject
-                    &&  jsonObject.getBoolean("result")  && jsonObject.getInteger("code") == 200){
-                String redirectUrl = jsonObject.getJSONObject("data").getString("redirectUrl");
-                data.put("redirectUrl",redirectUrl);
-                return PaymentRES.of(String.valueOf(PaymentBizException.SUCCESS), data, "重定向请求发起");
-            }
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-        }
-        return PaymentRES.of(String.valueOf(PaymentBizException.FAILED), "获取openid失败!");
-    }
-*/
-
 }

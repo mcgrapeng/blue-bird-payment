@@ -4,21 +4,21 @@ import java.io.Serializable;
 
 public class PaymentRES<T> implements Serializable {
 
-    private String code;
+    private int code;
     private T data;
     private String message;
 
-    public PaymentRES(String code, T data, String message) {
+    public PaymentRES(int code, T data, String message) {
         this.code = code;
         this.data = data;
         this.message= message;
     }
 
-    public String getCode() {
+    public int getCode() {
         return code;
     }
 
-    public void setCode(String code) {
+    public void setCode(int code) {
         this.code = code;
     }
 
@@ -38,15 +38,15 @@ public class PaymentRES<T> implements Serializable {
         this.message = message;
     }
 
-    public PaymentRES(String code, String message) {
+    public PaymentRES(int code, String message) {
         this(code,null,message);
     }
 
-    public static <T> PaymentRES<T> of(String code, T data, String message){
+    public static <T> PaymentRES<T> of(int code, T data, String message){
         return new PaymentRES<T>(code,data,message);
     }
 
-    public static <T> PaymentRES<T> of(String code, String message){
+    public static <T> PaymentRES<T> of(int code, String message){
         return new PaymentRES<T>(code,message);
     }
 
