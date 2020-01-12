@@ -446,7 +446,7 @@ public abstract class PaymentProcessorTemplate implements PaymentProcessor {
     }
 
 
-    @Override
+  /*  @Override
     public PaymentRES payPostProcess(PaymentREQ req) {
         PaymentWay payWay = queryPaymentWay(req.getProductNo(), req.getPayType());//支付产品下的支付通道，支付通道下的支付类型
         if (payWay == null) {
@@ -469,7 +469,7 @@ public abstract class PaymentProcessorTemplate implements PaymentProcessor {
         return PaymentRES.of(PaymentBizException.FAILED
                 , "关单失败！");
     }
-
+*/
 
     /**
      * 张三丰

@@ -17,10 +17,10 @@
     <dubbo:registry   protocol="redis" address="127.0.0.1:6379" />
 
     <!-- 用dubbo协议在20880端口暴露服务 -->
-    <dubbo:protocol name="dubbo" port="20888" />
+    <dubbo:protocol name="dubbo" port="20940" />
 
     <!-- 监控的配置 -->
-    <dubbo:monitor protocol="registry"></dubbo:monitor>
+   <!-- <dubbo:monitor protocol="registry"></dubbo:monitor>-->
 
 
     <!-- 当ProtocolConfig和ServiceConfig某属性没有配置时,采用此缺省值 -->
@@ -32,6 +32,6 @@
                    ref="paymentOrderService"  timeout="60000"/>
 
     <dubbo:service retries="0" interface="com.zhangpeng.payment.center.PaymentProcessor"
-                   ref="MDPaymentProcessor"  timeout="60000" group="MD"/>
+                   ref="MDPaymentProcessor"  timeout="60000" />
 
 </beans>

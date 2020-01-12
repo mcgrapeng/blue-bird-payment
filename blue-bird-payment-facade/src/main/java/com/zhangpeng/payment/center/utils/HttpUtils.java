@@ -1,6 +1,8 @@
 package com.zhangpeng.payment.center.utils;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
@@ -15,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 public final class HttpUtils {
 
     /**
@@ -33,7 +36,7 @@ public final class HttpUtils {
             // s.setContentEncoding("UTF-8");
             // s.setContentType("application/x-www-form-urlencoded;charset=UTF-8");//发送表单数据需要设置contentType
             // post.setEntity(s);
-
+            log.info("调用秒到==================="+json.toString());
             List<BasicNameValuePair> pairList = new ArrayList<BasicNameValuePair>();
             String totalAmount = json.get("totalAmount");
             if(StringUtils.isNotBlank(totalAmount)){
@@ -92,14 +95,16 @@ public final class HttpUtils {
             post.setEntity(new UrlEncodedFormEntity(pairList, "utf-8"));
 
             HttpResponse res = httpclient.execute(post);
+            log.info("==================="+ JSON.toJSONString(res));
             if (res.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
                 String result = EntityUtils.toString(res.getEntity());// 返回json格式：
+                log.info("==================================+result," + result);
                 if (StringUtils.isNotBlank(result)) {
                     response = JSONObject.parseObject(result);
                 }
             }
         } catch (Exception e) {
-            throw new RuntimeException(e);
+           log.error(e.getMessage(),e);
         }
         return response;
     }

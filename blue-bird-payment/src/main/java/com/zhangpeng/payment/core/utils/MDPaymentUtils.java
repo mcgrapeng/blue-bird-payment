@@ -58,7 +58,9 @@ public final class MDPaymentUtils {
         } catch (Exception e) {
             log.error("秒到下单接口异常: outTradeNo = {} , totalAmount = {} ", outTradeNo, totalAmount, e);
         }
-        log.info("微信小程序统一下单，返回报文:{}", jsonObject.toJSONString());
+        if(null != jsonObject){
+            log.info("微信小程序统一下单，返回报文:{}", jsonObject.toJSONString());
+        }
         return jsonObject;
     }
 
