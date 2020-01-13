@@ -20,7 +20,7 @@ public class WXConfigUtils {
 
     public static final String QUERY_ORDER_URL = "https://api.mch.weixin.qq.com/pay/orderquery";
 
-    public static final String PAY_KEY = null;
+    public static final String PAY_KEY = "efc19b528d3c4defd84ca511bf6a5749";
 
     private WXConfigUtils() {
 

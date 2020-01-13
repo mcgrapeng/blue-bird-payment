@@ -1,6 +1,8 @@
 package com.zhangpeng.payment.center;
 
 
+import java.util.Map;
+
 public interface PaymentProcessor {
 
     /**
@@ -28,6 +30,8 @@ public interface PaymentProcessor {
     PaymentRES completePay(String payProductNo, String payTypeCode, String tradeNo, String tradeOrderNo, String trxNo, String merchantOrderNo
             , String merchantNo, String orderAmount, String payStatus
             , String payFinishTime, String sign, String resultCode);
+
+    PaymentRES completePay(String payWayCode, Map<String,String> notifyMap);
 
 
     /**

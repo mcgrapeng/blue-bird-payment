@@ -13,7 +13,9 @@ public enum MerchantEnum {
 
     KKD_PROGRAM("18616216340","卡卡得-小程序"),
 
-    KKD_ACCOUNT("18616216341","卡卡得-公众号");
+    KKD_ACCOUNT("18616216341","卡卡得-公众号"),
+
+    WX_PROGRAM("1563825601","微信-小程序");
 
     private String code;
     /** 描述 */

@@ -54,6 +54,27 @@ public final class WXCommonUtils {
 
     }
 
+
+    public static boolean notifySign(Map<String, String> result, String sign, String partnerKey) {
+        String argNotifySign = getStringByStringMap(result) + "&key=" + partnerKey;
+        String notifySign = MD5.encode(argNotifySign).toUpperCase();
+        if (notifySign.equals(sign)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public static String getStringByStringMap(Map<String, String> map) {
+        SortedMap<String, Object> smap = new TreeMap<String, Object>(map);
+        StringBuffer sb = new StringBuffer();
+        for (Map.Entry<String, Object> m : smap.entrySet()) {
+            sb.append(m.getKey()).append("=").append(m.getValue()).append("&");
+        }
+        sb.delete(sb.length() - 1, sb.length());
+        return sb.toString();
+    }
+
     //appId、timeStamp、nonceStr、package、signType
 
     /**

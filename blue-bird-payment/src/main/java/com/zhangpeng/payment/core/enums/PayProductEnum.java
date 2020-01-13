@@ -8,8 +8,8 @@ import com.zhangpeng.payment.center.PayMDConfiguration;
  */
 public enum PayProductEnum {
 
-    MIAODAO_PAY (PayMDConfiguration.PRODUCT_NO,"秒到支付",Boolean.TRUE)
-
+    MIAODAO_PAY (PayMDConfiguration.PRODUCT_NO,"秒到支付",Boolean.TRUE),
+    WEIXIN_PAY ("02","微信支付",Boolean.TRUE)
     ;
 
     private String productNo;

@@ -32,6 +32,6 @@
                    ref="paymentOrderService"  timeout="60000"/>
 
     <dubbo:service retries="0" interface="com.zhangpeng.payment.center.PaymentProcessor"
-                   ref="MDPaymentProcessor"  timeout="60000" />
+                   ref="WXPaymentProcessor"  timeout="60000" />
 
 </beans>

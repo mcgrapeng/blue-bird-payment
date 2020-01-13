@@ -31,7 +31,7 @@ public final class WXPaymentUtils {
      * 公众号/小程序/APP统一下单
      * @return
      */
-    public static Map<String, Object> unifiedOrder(WeiXinTradeTypeEnum tradeTypeEnum,String outTradeNo, String body, BigDecimal totalAmount, String spbillCreateIp
+    public static Map<String, Object> unifiedOrder(WeiXinTradeTypeEnum tradeTypeEnum,String trxNo,String outTradeNo, String body, BigDecimal totalAmount, String spbillCreateIp
             , String notifyUrl, String openid, List<TransferProductDetails> transferProductDetails) {
         String nonce_str = WXCommonUtils.createNonceStr();
         Integer totalFee = totalAmount.multiply(BigDecimal.valueOf(100L)).intValue();
@@ -43,6 +43,7 @@ public final class WXPaymentUtils {
         paramMap.put("nonce_str", nonce_str);
         paramMap.put("sign_type", SecurityEnum.MD5.getDesc());//否
         paramMap.put("body", body);
+        paramMap.put("attach", trxNo);
         paramMap.put("out_trade_no", outTradeNo);
         paramMap.put("total_fee", totalFee);
         paramMap.put("spbill_create_ip", spbillCreateIp);
@@ -58,7 +59,7 @@ public final class WXPaymentUtils {
 
         paramMap.put("fee_type", "CNY");//否
         paramMap.put("openid", openid);
-        if (!CollectionUtils.isEmpty(transferProductDetails)) {
+ /*       if (!CollectionUtils.isEmpty(transferProductDetails)) {
             List<SortedMap<String, Object>> goodList = new ArrayList<>();
             for (TransferProductDetails detail : transferProductDetails) {
                 SortedMap<String, Object> goodsDetailMap = new TreeMap<>();
@@ -71,8 +72,8 @@ public final class WXPaymentUtils {
             JSONObject goodsDetailJson = new JSONObject();
             goodsDetailJson.put("goods_detail", goodList);
             paramMap.put("detail", goodsDetailJson.toJSONString());
-        }
-        paramMap.put("sign", WXCommonUtils.md5Sign(paramMap, WXConfigUtils.PAY_KEY));
+        }*/
+        paramMap.put("sign", WXCommonUtils.md5Sign(paramMap, WXConfigUtils.xPayKey));
         String data = mapToXml(paramMap);
         log.info("微信小程序统一下单，请求报文:{}", data);
         Map<String, Object> resultMap = httpXmlRequest(WXConfigUtils.UNIFIED_ORDER_URL, "POST", data);
@@ -82,11 +83,12 @@ public final class WXPaymentUtils {
         }
         SortedMap<String, Object> responseMap = new TreeMap<>();
         responseMap.putAll(resultMap);
-        String resultSign = WXCommonUtils.getSign(responseMap, WXConfigUtils.PAY_KEY);
+        String resultSign = WXCommonUtils.getSign(responseMap, WXConfigUtils.xPayKey);
         if (resultSign.equals(resultMap.get("sign"))) {
             resultMap.put("verify", "YES");
         } else {
             log.info("返回报文验签失败,返回报文签名:{},返回签名:{}", resultSign, resultMap.get("sign"));
+            resultMap.put("verify", "NO");
             resultMap.put("verify", "NO");
         }
         return resultMap;
@@ -113,6 +115,33 @@ public final class WXPaymentUtils {
     }
 
 
+    /**
+     * 解析微信发来的请求（XML）
+     *
+     * @param inputStream
+     * @return
+     * @throws Exception
+     */
+    public static Map<String, String> parseXml(InputStream inputStream) throws Exception {
+
+        if (inputStream == null) {
+            return null;
+        }
+
+        Map<String, String> map = new HashMap<String, String>();// 将解析结果存储在HashMap中
+        SAXReader reader = new SAXReader();// 读取输入流
+        Document document = reader.read(inputStream);
+        Element root = document.getRootElement();// 得到xml根元素
+        List<Element> elementList = root.elements();// 得到根元素的所有子节点
+        for (Element e : elementList) { // 遍历所有子节点
+            map.put(e.getName(), e.getText());
+        }
+
+        inputStream.close(); // 释放资源
+        inputStream = null;
+
+        return map;
+    }
 
     /**
      * 转xml格式

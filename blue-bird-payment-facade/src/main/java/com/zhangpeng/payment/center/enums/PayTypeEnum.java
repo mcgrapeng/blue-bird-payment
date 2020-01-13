@@ -11,6 +11,7 @@ import java.util.Map;
  */
 public enum PayTypeEnum {
 
+    WEIXIN_PROGRAM_PAY(PayWayEnum.WEIXIN.name(),"微信小程序"),
     WX_PROGRAM_PAY(PayWayEnum.MIAODAO.name(),"微信小程序"),
     WX_ACCOUNT_PAY(PayWayEnum.MIAODAO.name(),"微信公众号"),
     WX_APP_PAY(PayWayEnum.MIAODAO.name(),"微信app"),

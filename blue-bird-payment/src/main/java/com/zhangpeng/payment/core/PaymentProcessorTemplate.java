@@ -11,8 +11,11 @@ import com.zhangpeng.payment.center.enums.*;
 import com.zhangpeng.payment.center.ex.PaymentBizException;
 import com.zhangpeng.payment.center.utils.DateUtils;
 import com.zhangpeng.payment.core.enums.PayProductEnum;
+import com.zhangpeng.payment.core.enums.WeixinTradeStateEnum;
 import com.zhangpeng.payment.core.utils.MDPaymentSign;
 import com.zhangpeng.payment.core.utils.MDPaymentUtils;
+import com.zhangpeng.payment.core.utils.WXCommonUtils;
+import com.zhangpeng.payment.core.utils.WXConfigUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -324,7 +327,7 @@ public abstract class PaymentProcessorTemplate implements PaymentProcessor {
                     , "网络异常，请稍后重试");
         }
         if (paymentToken == null) {
-            if(!isQueryUniteOrder(payProductNo , payTypeCode , merchantOrderNo)){
+            if (!isQueryUniteOrder(payProductNo, payTypeCode, merchantOrderNo)) {
                 return PaymentRES.of(PaymentBizException.TRADE_PAY_NO_ERROR, "非法交易流水,交易流水号不存在");
             }
         }
@@ -345,36 +348,117 @@ public abstract class PaymentProcessorTemplate implements PaymentProcessor {
             return PaymentRES.of(PaymentBizException.TRADE_ORDER_NO_ERROR, "订单号不一致");
         }
 
-        Map<String, String> param = Maps.newHashMap();
-        param.put("tradeNo", tradeOrderNo);
-        param.put("outTradeNo", merchantOrderNo);
-        param.put("payStatus", payStatus);
-        param.put("amount", orderAmount);
+        PaymentWay payWay = queryPaymentWay(payProductNo, payTypeCode);//支付产品下的支付通道，支付通道下的支付类型
+        if (payWay == null) {
+            return PaymentRES.of(PaymentBizException.TRADE_PAY_WAY_ERROR
+                    , "用户支付通道配置有误");
+        }
 
-        if (MDPaymentSign.verifySign(param, payTypeCode,sign)) {
-            if (TradeStatusEnum.SUCCESS.name().equalsIgnoreCase(resultCode)) {// 业务结果
-                // 成功
-                Date timeEnd = null;
-                if (!StringUtils.isEmpty(payFinishTime)) {
-                    timeEnd = DateUtils.getDateFromString(payFinishTime, "yyyy-MM-dd HH:mm:ss");// 订单支付完成时间
-                }
-                try {
-                    completeSuccessOrder(paymentToken, tradeOrderNo, timeEnd);
-                } catch (Exception e) {
-                    log.error("完成支付单SUCCESS发生异常，tradeOrderNo = {} , trxNo = {} , orderNo = {}", tradeOrderNo, trxNo, merchantOrderNo, e);
-                    return PaymentRES.of(PaymentBizException.FAILED
-                            , "网络异常，请稍后重试");
-                }
-                return PaymentRES.of(PaymentBizException.SUCCESS, "success");
-            } else {
-                try {
-                    completeFailOrder(paymentToken);
-                } catch (Exception e) {
-                    log.error("完成支付单FAILED发生异常，tradeOrderNo = {} , trxNo = {} , orderNo = {}", tradeOrderNo, trxNo, merchantOrderNo, e);
-                    return PaymentRES.of(PaymentBizException.FAILED
-                            , "网络异常，请稍后重试");
+        if (payWay.getStatus().equals(PublicStatusEnum.UNACTIVE.name())) {
+            return PaymentRES.of(PaymentBizException.TRADE_PAY_WAY_ERROR
+                    , "该支付通道未激活");
+        }
+
+        if (PayWayEnum.WEIXIN.name().equals(payWay.getPayWayCode())) {
+        } else {
+            Map<String, String> param = Maps.newHashMap();
+            param.put("tradeNo", tradeOrderNo);
+            param.put("outTradeNo", merchantOrderNo);
+            param.put("payStatus", payStatus);
+            param.put("amount", orderAmount);
+            if (MDPaymentSign.verifySign(param, payTypeCode, sign)) {
+                if (TradeStatusEnum.SUCCESS.name().equalsIgnoreCase(resultCode)) {// 业务结果
+                    // 成功
+                    Date timeEnd = null;
+                    if (!StringUtils.isEmpty(payFinishTime)) {
+                        timeEnd = DateUtils.getDateFromString(payFinishTime, "yyyy-MM-dd HH:mm:ss");// 订单支付完成时间
+                    }
+                    try {
+                        completeSuccessOrder(paymentToken, tradeOrderNo, timeEnd);
+                    } catch (Exception e) {
+                        log.error("完成支付单SUCCESS发生异常，tradeOrderNo = {} , trxNo = {} , orderNo = {}", tradeOrderNo, trxNo, merchantOrderNo, e);
+                        return PaymentRES.of(PaymentBizException.FAILED
+                                , "网络异常，请稍后重试");
+                    }
+                    return PaymentRES.of(PaymentBizException.SUCCESS, "success");
+                } else {
+                    try {
+                        completeFailOrder(paymentToken);
+                    } catch (Exception e) {
+                        log.error("完成支付单FAILED发生异常，tradeOrderNo = {} , trxNo = {} , orderNo = {}", tradeOrderNo, trxNo, merchantOrderNo, e);
+                        return PaymentRES.of(PaymentBizException.FAILED
+                                , "网络异常，请稍后重试");
+                    }
                 }
             }
+        }
+        return PaymentRES.of(PaymentBizException.FAILED, "网络异常，请稍后重试");
+    }
+
+    @Override
+    public PaymentRES completePay(String payWayCode, Map<String, String> notifyMap) {
+
+        String merchantOrderNo = notifyMap.get("out_trade_no");
+        String orderAmount = notifyMap.get("total_fee");
+        String tradeOrderNo = notifyMap.get("transaction_id");
+        String trxNo = notifyMap.get("attach");
+
+        // 根据交易流水号获取支付信息
+        PaymentToken paymentToken;
+        try {
+            paymentToken = paymentTokenService.queryPaymentTokenByTrxNo(trxNo);
+        } catch (Exception e) {
+            log.error("获取支付流水发生异常，tradeOrderNo = {} , trxNo = {} , orderNo = {}", tradeOrderNo, trxNo, merchantOrderNo, e);
+            return PaymentRES.of(PaymentBizException.FAILED
+                    , "网络异常，请稍后重试");
+        }
+
+        if (TradeStatusEnum.SUCCESS.name().equals(paymentToken.getStatus())) {
+            return PaymentRES.of(PaymentBizException.TRADE_SUCCSSED, "订单已交易成功");
+        }
+
+        if (!orderAmount.equals(paymentToken.getOrderAmount().toPlainString())) {
+            return PaymentRES.of(PaymentBizException.TRADE_ORDER_AMOUNT_ERROR, "订单金额不一致");
+        }
+
+        if (!merchantOrderNo.equals(paymentToken.getMerchantOrderNo())) {
+            return PaymentRES.of(PaymentBizException.TRADE_ORDER_NO_ERROR, "订单号不一致");
+        }
+
+
+        if (PayWayEnum.WEIXIN.name().equals(payWayCode)) {
+            String sign = notifyMap.remove("sign");
+            if (WXCommonUtils.notifySign(notifyMap, sign, WXConfigUtils.PAY_KEY)) {
+                if (WeixinTradeStateEnum.SUCCESS.name().equals(notifyMap.get("result_code"))) {// 业务结果
+                    // 成功
+                    String timeEndStr = notifyMap.get("time_end");
+                    // 成功
+                    Date timeEnd = null;
+                    if (!StringUtils.isEmpty(timeEndStr)) {
+                        timeEnd = DateUtils.getDateFromString(timeEndStr, "yyyyMMddHHmmss");// 订单支付完成时间
+                    }
+                    try {
+                        completeSuccessOrder(paymentToken, notifyMap.get("transaction_id"), timeEnd);
+                    } catch (Exception e) {
+                        log.error("完成支付单SUCCESS发生异常，tradeOrderNo = {} , trxNo = {} , orderNo = {}", tradeOrderNo, trxNo, merchantOrderNo, e);
+                        return PaymentRES.of(PaymentBizException.FAILED
+                                , "网络异常，请稍后重试");
+                    }
+                    return PaymentRES.of(PaymentBizException.SUCCESS, "success");
+                } else {
+                    try {
+                        completeFailOrder(paymentToken);
+                    } catch (Exception e) {
+                        log.error("完成支付单FAILED发生异常，tradeOrderNo = {} , trxNo = {} , orderNo = {}", tradeOrderNo, trxNo, merchantOrderNo, e);
+                        return PaymentRES.of(PaymentBizException.FAILED
+                                , "网络异常，请稍后重试");
+                    }
+                }
+            } else {
+                return PaymentRES.of(PaymentBizException.TRADE_WEIXIN_ERROR, "微信签名失败");
+            }
+        } else {
+
         }
         return PaymentRES.of(PaymentBizException.FAILED, "网络异常，请稍后重试");
     }
@@ -402,7 +486,7 @@ public abstract class PaymentProcessorTemplate implements PaymentProcessor {
         }
 
         if (paymentToken == null) {
-            if(!isQueryUniteOrder(payProductNo , payTypeCode , merchantOrderNo)){
+            if (!isQueryUniteOrder(payProductNo, payTypeCode, merchantOrderNo)) {
                 return PaymentRES.of(PaymentBizException.TRADE_PAY_NO_ERROR, "非法交易流水,交易流水号不存在");
             }
         }
@@ -425,18 +509,18 @@ public abstract class PaymentProcessorTemplate implements PaymentProcessor {
         String orderStatus;
         if (paymentOrder == null) {
             JSONObject jsonObject = queryUniteOrder(payProductNo, payTypeCode, merchantOrderNo);
-            if(null == jsonObject){
+            if (null == jsonObject) {
                 return PaymentRES.of(PaymentBizException.TRADE_PAY_NO_ERROR, "非法交易流水,交易流水号不存在");
             }
             orderStatus = jsonObject.getString("orderStatus");
-            if(StringUtils.isNotBlank(orderStatus)){
-                if("FINISH".equalsIgnoreCase(orderStatus)){
+            if (StringUtils.isNotBlank(orderStatus)) {
+                if ("FINISH".equalsIgnoreCase(orderStatus)) {
                     orderStatus = TradeStatusEnum.SUCCESS.name();
-                }else{
+                } else {
                     orderStatus = TradeStatusEnum.PAYMENT.name();
                 }
             }
-        }else{
+        } else {
             TradeStatusEnum tradeStatusEnum = TradeStatusEnum.getEnum(paymentOrder.getStatus());
             orderStatus = tradeStatusEnum.name();
         }
@@ -474,62 +558,64 @@ public abstract class PaymentProcessorTemplate implements PaymentProcessor {
     /**
      * 张三丰
      * 是否存在统一订单
+     *
      * @param payProductNo
      * @param payTypeCode
      * @param merchantOrderNo
      * @return
      */
-    private boolean  isQueryUniteOrder(String payProductNo , String payTypeCode , String merchantOrderNo){
-        return queryUniteOrder(payProductNo , payTypeCode , merchantOrderNo)  != null;
+    private boolean isQueryUniteOrder(String payProductNo, String payTypeCode, String merchantOrderNo) {
+        return queryUniteOrder(payProductNo, payTypeCode, merchantOrderNo) != null;
     }
 
 
     /**
      * 张三丰
      * 查询统一订单
+     *
      * @param payProductNo
      * @param payTypeCode
      * @param merchantOrderNo
      * @return
      */
-    private JSONObject  queryUniteOrder(String payProductNo , String payTypeCode , String merchantOrderNo){
+    private JSONObject queryUniteOrder(String payProductNo, String payTypeCode, String merchantOrderNo) {
         PaymentWay payWay = queryPaymentWay(payProductNo, payTypeCode);//支付产品下的支付通道，支付通道下的支付类型
         if (payWay == null) {
-            log.error("统一订单查询,支付方式配置有误，payProductNo = {} , payTypeCode = {}",payProductNo,payTypeCode);
+            log.error("统一订单查询,支付方式配置有误，payProductNo = {} , payTypeCode = {}", payProductNo, payTypeCode);
             return null;
         }
         String payWayCode = payWay.getPayWayCode();
 
-        if(StringUtils.isBlank(merchantOrderNo)
+        if (StringUtils.isBlank(merchantOrderNo)
                 || StringUtils.isBlank(payWayCode)
-                || StringUtils.isBlank(payTypeCode)){
-            log.error("统一订单查询，merchantOrderNo = {} , payWayCode = {} , payTypeCode = {}",merchantOrderNo,payWayCode,payTypeCode);
+                || StringUtils.isBlank(payTypeCode)) {
+            log.error("统一订单查询，merchantOrderNo = {} , payWayCode = {} , payTypeCode = {}", merchantOrderNo, payWayCode, payTypeCode);
             return null;
         }
 
         if (payWayCode.equals(PayWayEnum.MIAODAO.name())) {
             JSONObject jsonObject = null;
             //查询秒到支付订单
-            if(payTypeCode.equalsIgnoreCase(PayTypeEnum.WX_PROGRAM_PAY.name())){
+            if (payTypeCode.equalsIgnoreCase(PayTypeEnum.WX_PROGRAM_PAY.name())) {
                 try {
                     jsonObject = MDPaymentUtils.queryOrder(MDPayConfigEnum.MD_WX_PROGRAM_PAY.getMerchantNo()
-                            ,merchantOrderNo,MDPayConfigEnum.MD_WX_PROGRAM_PAY.getKey());
+                            , merchantOrderNo, MDPayConfigEnum.MD_WX_PROGRAM_PAY.getKey());
                 } catch (Exception e) {
-                    log.error("统一订单查询发生异常，merchantOrderNo = {} , payWayCode = {} , payTypeCode = {}",merchantOrderNo,payWayCode,payTypeCode,e);
+                    log.error("统一订单查询发生异常，merchantOrderNo = {} , payWayCode = {} , payTypeCode = {}", merchantOrderNo, payWayCode, payTypeCode, e);
                     return null;
                 }
-            }else if(payTypeCode.equalsIgnoreCase(PayTypeEnum.WX_ACCOUNT_PAY.name())){
+            } else if (payTypeCode.equalsIgnoreCase(PayTypeEnum.WX_ACCOUNT_PAY.name())) {
                 try {
                     jsonObject = MDPaymentUtils.queryOrder(MDPayConfigEnum.MD_WX_ACCOUNT_PAY.getMerchantNo()
-                            ,merchantOrderNo,MDPayConfigEnum.MD_WX_ACCOUNT_PAY.getKey());
+                            , merchantOrderNo, MDPayConfigEnum.MD_WX_ACCOUNT_PAY.getKey());
                 } catch (Exception e) {
-                    log.error("统一订单查询发生异常，merchantOrderNo = {} , payWayCode = {} , payTypeCode = {}",merchantOrderNo,payWayCode,payTypeCode,e);
+                    log.error("统一订单查询发生异常，merchantOrderNo = {} , payWayCode = {} , payTypeCode = {}", merchantOrderNo, payWayCode, payTypeCode, e);
                     return null;
                 }
             }
             if (null != jsonObject
                     && jsonObject.getBoolean("result") && jsonObject.getInteger("code") == 200) {
-              return jsonObject;
+                return jsonObject;
             }
         }
         return null;
