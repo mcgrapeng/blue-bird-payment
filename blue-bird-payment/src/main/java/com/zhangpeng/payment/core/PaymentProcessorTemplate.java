@@ -233,7 +233,7 @@ public abstract class PaymentProcessorTemplate implements PaymentProcessor {
                     , "网络异常，请稍后重试");
         }
 
-        paymentREQ.setTradeNo(paymentToken.getTrxNo());
+        paymentREQ.setTrxNo(paymentToken.getTrxNo());
         return process(payWay, paymentREQ);
     }
 
@@ -428,7 +428,7 @@ public abstract class PaymentProcessorTemplate implements PaymentProcessor {
 
         if (PayWayEnum.WEIXIN.name().equals(payWayCode)) {
             String sign = notifyMap.remove("sign");
-            if (WXCommonUtils.notifySign(notifyMap, sign, WXConfigUtils.PAY_KEY)) {
+            if (WXCommonUtils.notifySign(notifyMap, sign,WXConfigUtils.xPayKey)) {
                 if (WeixinTradeStateEnum.SUCCESS.name().equals(notifyMap.get("result_code"))) {// 业务结果
                     // 成功
                     String timeEndStr = notifyMap.get("time_end");

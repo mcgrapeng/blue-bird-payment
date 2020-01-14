@@ -28,11 +28,12 @@ public final class WXPaymentUtils {
      * 公众号/小程序/APP统一下单
      * @return
      */
-    public static Map<String, Object> unifiedOrder(WeiXinTradeTypeEnum tradeTypeEnum,String trxNo,String outTradeNo, String body, BigDecimal totalAmount, String spbillCreateIp
+    public static Map<String, Object> unifiedOrder(WeiXinTradeTypeEnum tradeTypeEnum,String trxNo,String outTradeNo, String body
+            , BigDecimal totalAmount, String spbillCreateIp
             , String notifyUrl, String openid, List<TransferProductDetails> transferProductDetails) {
         String nonce_str = WXCommonUtils.createNonceStr();
         Integer totalFee = totalAmount.multiply(BigDecimal.valueOf(100L)).intValue();
-        log.info("=====================totalFee="+totalFee);
+        log.info("=====================trxNo="+trxNo);
         SortedMap<String, Object> paramMap = new TreeMap<>();
         paramMap.put("appid", WXConfigUtils.xAppId);
         paramMap.put("mch_id", WXConfigUtils.xMchId);

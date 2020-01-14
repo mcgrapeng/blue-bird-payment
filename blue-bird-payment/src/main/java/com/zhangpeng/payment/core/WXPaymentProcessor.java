@@ -41,7 +41,6 @@ public class WXPaymentProcessor extends  PaymentProcessorTemplate  {
             data.put("timeStamp",String.valueOf(timeStamp));
             data.put("signType",signType);
             data.put("paySign",paySign);
-
             return PaymentRES.of(PaymentBizException.SUCCESS,data,"支付成功!");
         }
         return PaymentRES.of(PaymentBizException.FAILED,"支付失败!");
