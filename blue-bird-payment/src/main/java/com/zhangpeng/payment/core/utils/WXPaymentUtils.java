@@ -1,14 +1,11 @@
 package com.zhangpeng.payment.core.utils;
 
-import com.alibaba.fastjson.JSONObject;
 import com.zhangpeng.payment.core.domain.TransferProductDetails;
-import com.zhangpeng.payment.core.enums.SecurityEnum;
 import com.zhangpeng.payment.core.enums.WeiXinTradeTypeEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
-import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -35,13 +32,11 @@ public final class WXPaymentUtils {
             , String notifyUrl, String openid, List<TransferProductDetails> transferProductDetails) {
         String nonce_str = WXCommonUtils.createNonceStr();
         Integer totalFee = totalAmount.multiply(BigDecimal.valueOf(100L)).intValue();
-
+        log.info("=====================totalFee="+totalFee);
         SortedMap<String, Object> paramMap = new TreeMap<>();
         paramMap.put("appid", WXConfigUtils.xAppId);
         paramMap.put("mch_id", WXConfigUtils.xMchId);
-        paramMap.put("device_info", nonce_str);//否
         paramMap.put("nonce_str", nonce_str);
-        paramMap.put("sign_type", SecurityEnum.MD5.getDesc());//否
         paramMap.put("body", body);
         paramMap.put("attach", trxNo);
         paramMap.put("out_trade_no", outTradeNo);
@@ -54,26 +49,9 @@ public final class WXPaymentUtils {
         }else if(tradeTypeEnum.name().equals(WeiXinTradeTypeEnum.APP.name())){//APP
             paramMap.put("trade_type", WeiXinTradeTypeEnum.APP.name());
         }
-
-        //paramMap.put("product_id","");//否--native必传
-
-        paramMap.put("fee_type", "CNY");//否
         paramMap.put("openid", openid);
- /*       if (!CollectionUtils.isEmpty(transferProductDetails)) {
-            List<SortedMap<String, Object>> goodList = new ArrayList<>();
-            for (TransferProductDetails detail : transferProductDetails) {
-                SortedMap<String, Object> goodsDetailMap = new TreeMap<>();
-                goodsDetailMap.put("goods_id", detail.getGoodsId());
-                goodsDetailMap.put("quantity", detail.getQuantity());
-                goodsDetailMap.put("goods_name", detail.getGoodsName());
-                goodsDetailMap.put("price", detail.getPrice());
-                goodList.add(goodsDetailMap);
-            }
-            JSONObject goodsDetailJson = new JSONObject();
-            goodsDetailJson.put("goods_detail", goodList);
-            paramMap.put("detail", goodsDetailJson.toJSONString());
-        }*/
-        paramMap.put("sign", WXCommonUtils.md5Sign(paramMap, WXConfigUtils.xPayKey));
+
+        paramMap.put("sign", getSign(paramMap, WXConfigUtils.xPayKey));
         String data = mapToXml(paramMap);
         log.info("微信小程序统一下单，请求报文:{}", data);
         Map<String, Object> resultMap = httpXmlRequest(WXConfigUtils.UNIFIED_ORDER_URL, "POST", data);
@@ -83,7 +61,7 @@ public final class WXPaymentUtils {
         }
         SortedMap<String, Object> responseMap = new TreeMap<>();
         responseMap.putAll(resultMap);
-        String resultSign = WXCommonUtils.getSign(responseMap, WXConfigUtils.xPayKey);
+        String resultSign = getSign(responseMap, WXConfigUtils.xPayKey);
         if (resultSign.equals(resultMap.get("sign"))) {
             resultMap.put("verify", "YES");
         } else {
@@ -94,6 +72,26 @@ public final class WXPaymentUtils {
         return resultMap;
     }
 
+
+
+    /**
+     * 签名
+     *
+     * @param paramMap
+     * @param key
+     * @return
+     */
+    public static String getSign(SortedMap<String, Object> paramMap, String key) {
+        StringBuilder signBuilder = new StringBuilder();
+        for (Map.Entry<String, Object> entry : paramMap.entrySet()) {
+            if (!"sign".equals(entry.getKey()) && !ObjectUtils.isEmpty(entry.getValue())) {
+                signBuilder.append(entry.getKey()).append("=").append(entry.getValue()).append("&");
+            }
+        }
+        signBuilder.append("key=").append(key);
+        log.info("微信待签名参数字符串:{}", signBuilder.toString());
+        return MD5.encode(signBuilder.toString()).toUpperCase();
+    }
 
     /**
      * 订单查询
@@ -145,6 +143,7 @@ public final class WXPaymentUtils {
 
     /**
      * 转xml格式
+     *
      * @param paramMap
      * @return
      */
@@ -159,7 +158,6 @@ public final class WXPaymentUtils {
         log.info("Map转Xml结果:{}", dataBuilder.toString());
         return dataBuilder.toString();
     }
-
 
 
 
