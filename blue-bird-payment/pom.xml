@@ -21,7 +21,7 @@
         <project.encoding>UTF-8</project.encoding>
         <jdk.version>1.8</jdk.version>
         <junit.version>4.12</junit.version>
-        <spring.version>4.3.6.RELEASE</spring.version>
+        <spring.version>5.2.22.RELEASE</spring.version>
         <qos.logback.version>1.2.1</qos.logback.version>
         <org.aspectj.version>1.6.11</org.aspectj.version>
         <log4j.slf4j.version>1.7.25</log4j.slf4j.version>
